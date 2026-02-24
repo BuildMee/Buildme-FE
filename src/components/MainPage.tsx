@@ -3,9 +3,14 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/MainPage.module.css';
 
-const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string;
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined;
 
 function handleGitHubLogin() {
+  if (!GITHUB_CLIENT_ID) {
+    console.error('VITE_GITHUB_CLIENT_ID 환경변수가 설정되지 않았습니다.');
+    return;
+  }
+
   const state = crypto.randomUUID();
   sessionStorage.setItem('oauth_state', state);
 

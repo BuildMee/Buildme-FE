@@ -120,6 +120,11 @@
   transform: translateY(-2px);
 }
 
+.primaryBtn:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 3px;
+}
+
 .ghostBtn {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -130,5 +135,11 @@
 }
 
 .ghostBtn:hover {
+  color: var(--color-black);
+}
+
+.ghostBtn:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 3px;
   color: var(--color-black);
 }
