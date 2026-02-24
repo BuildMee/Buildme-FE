@@ -8,8 +8,14 @@ import GitHubCallbackPage from './components/GitHubCallbackPage';
 type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback';
 
 function getPage(): Page {
-  // GitHub OAuth 콜백: URL에 ?code= 파라미터가 있을 때
-  if (new URLSearchParams(window.location.search).has('code')) return 'github-callback';
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  const savedState = sessionStorage.getItem('oauth_state');
+
+  // code와 state 둘 다 있고, state가 저장된 값과 일치할 때만 콜백 페이지로 이동
+  if (code && state && state === savedState) return 'github-callback';
+
   if (window.location.hash === '#templates') return 'templates';
   if (window.location.hash === '#submit') return 'submit';
   if (window.location.hash === '#resume') return 'resume';
