@@ -208,10 +208,10 @@ export default function MainPage() {
                 GitHub으로 시작하기
               </button>
               <span className={styles.ctaDivider}>OR</span>
-              <button className={styles.btnOutline}>
+              <a href="#resume" className={styles.btnOutline}>
                 <UploadIcon />
-                이력서 업로드
-              </button>
+                이력서로 시작하기
+              </a>
             </div>
             <button className={styles.btnGhost}>템플릿 둘러보기 →</button>
           </div>

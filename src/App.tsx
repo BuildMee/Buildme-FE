@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import MainPage from './components/MainPage';
 import TemplatesPage from './components/TemplatesPage';
 import SubmitPage from './components/SubmitPage';
+import ResumePage from './components/ResumePage';
 
-type Page = 'home' | 'templates' | 'submit';
+type Page = 'home' | 'templates' | 'submit' | 'resume';
 
 function getPage(): Page {
   if (window.location.hash === '#templates') return 'templates';
   if (window.location.hash === '#submit') return 'submit';
+  if (window.location.hash === '#resume') return 'resume';
   return 'home';
 }
 
@@ -25,5 +27,6 @@ export default function App() {
 
   if (page === 'templates') return <TemplatesPage />;
   if (page === 'submit') return <SubmitPage />;
+  if (page === 'resume') return <ResumePage />;
   return <MainPage />;
 }
