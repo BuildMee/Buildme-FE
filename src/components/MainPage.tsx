@@ -3,6 +3,25 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/MainPage.module.css';
 
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined;
+
+function handleGitHubLogin() {
+  if (!GITHUB_CLIENT_ID) {
+    console.error('VITE_GITHUB_CLIENT_ID 환경변수가 설정되지 않았습니다.');
+    return;
+  }
+
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('oauth_state', state);
+
+  const params = new URLSearchParams({
+    client_id: GITHUB_CLIENT_ID,
+    scope: 'read:user,repo',
+    state,
+  });
+  window.location.href = `https://github.com/login/oauth/authorize?${params.toString()}`;
+}
+
 /* ===== Types ===== */
 type Category = 'all' | 'minimal' | 'dark' | 'creative' | 'tech';
 
@@ -202,7 +221,7 @@ export default function MainPage() {
           </p>
           <div className={styles.heroCtas}>
             <div className={styles.heroCtaRow}>
-              <button className={styles.btnPrimary}>
+              <button className={styles.btnPrimary} onClick={handleGitHubLogin}>
                 <GitHubIcon />
                 GitHub으로 시작하기
               </button>
