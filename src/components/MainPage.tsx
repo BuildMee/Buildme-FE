@@ -196,10 +196,9 @@ export default function MainPage() {
       {/* ===== Hero ===== */}
       <section className={styles.hero}>
         <div className={styles.heroLeft}>
-          <p className={styles.heroLabel}>DEVELOPER PORTFOLIO GENERATOR</p>
-          <h1 className={styles.heroHeadline}>Build your portfolio.</h1>
+          <h1 className={styles.heroHeadline}>포트폴리오를<br />만들어보세요.</h1>
           <p className={styles.heroSub}>
-            GitHub 연동 또는 이력서 업로드만으로 AI가 5분 안에 포트폴리오 초안을 완성합니다.
+            GitHub 연동 또는 이력서 업로드만으로<br />AI가 5분 안에 포트폴리오 초안을 완성합니다.
           </p>
           <div className={styles.heroCtas}>
             <div className={styles.heroCtaRow}>
@@ -207,7 +206,7 @@ export default function MainPage() {
                 <GitHubIcon />
                 GitHub으로 시작하기
               </button>
-              <span className={styles.ctaDivider}>OR</span>
+              <span className={styles.ctaDivider}>또는</span>
               <a href="#resume" className={styles.btnOutline}>
                 <UploadIcon />
                 이력서로 시작하기
@@ -218,16 +217,12 @@ export default function MainPage() {
         </div>
         <div className={styles.heroRight}>
           <div className={styles.statCard}>
-            <div className={styles.statNumber}>2,400+</div>
-            <div className={styles.statLabel}>CONNECTED REPOS</div>
-          </div>
-          <div className={styles.statCard}>
             <div className={styles.statNumber}>890+</div>
-            <div className={styles.statLabel}>PORTFOLIOS MADE</div>
+            <div className={styles.statLabel}>만들어진 포트폴리오</div>
           </div>
           <div className={styles.statCard}>
-            <div className={styles.statNumber}>6</div>
-            <div className={styles.statLabel}>EXPORT FORMATS</div>
+            <div className={styles.statNumber}>1,200+</div>
+            <div className={styles.statLabel}>총 사용자</div>
           </div>
         </div>
       </section>
@@ -260,7 +255,7 @@ export default function MainPage() {
             >
               {tpl.component}
               <div className={styles.cardOverlay}>
-                <span className={styles.overlayText}>USE TEMPLATE</span>
+                <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
               <div className={styles.cardFooter}>
                 <div>

@@ -97,13 +97,14 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 700;
-  border: none;
+  border: 2px solid var(--color-black);
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 .btnPrimary:hover {
-  background: #1a1a1a;
+  background: var(--color-white);
+  color: var(--color-black);
   transform: translateY(-2px);
 }
 
