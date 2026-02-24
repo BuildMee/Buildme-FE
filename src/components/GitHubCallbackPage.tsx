@@ -34,9 +34,10 @@ export default function GitHubCallbackPage() {
       return;
     }
 
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
     const endpoint = provider === 'google'
-      ? 'http://localhost:3001/api/auth/google'
-      : 'http://localhost:3001/api/auth/github';
+      ? `${apiBase}/api/auth/google`
+      : `${apiBase}/api/auth/github`;
 
     // 백엔드에 code를 전송해 access_token 교환
     fetch(endpoint, {
