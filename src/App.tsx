@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import MainPage from './components/MainPage';
 import TemplatesPage from './components/TemplatesPage';
+import SubmitPage from './components/SubmitPage';
 
-type Page = 'home' | 'templates';
+type Page = 'home' | 'templates' | 'submit';
 
 function getPage(): Page {
-  return window.location.hash === '#templates' ? 'templates' : 'home';
+  if (window.location.hash === '#templates') return 'templates';
+  if (window.location.hash === '#submit') return 'submit';
+  return 'home';
 }
 
 export default function App() {
@@ -20,5 +23,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
-  return page === 'templates' ? <TemplatesPage /> : <MainPage />;
+  if (page === 'templates') return <TemplatesPage />;
+  if (page === 'submit') return <SubmitPage />;
+  return <MainPage />;
 }
