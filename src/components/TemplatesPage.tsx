@@ -225,10 +225,10 @@ export default function TemplatesPage() {
                 <div className={styles.statLabel}>CONTRIBUTORS</div>
               </div>
             </div>
-            <button className={styles.submitBtn}>
+            <a href="#submit" className={styles.submitBtn}>
               <PlusIcon />
               SUBMIT TEMPLATE
-            </button>
+            </a>
           </div>
         </div>
       </section>
@@ -306,7 +306,7 @@ export default function TemplatesPage() {
               다른 개발자들이 당신의 작업을 발전시킵니다.
             </p>
           </div>
-          <button className={styles.contributeCta}>SUBMIT YOUR TEMPLATE →</button>
+          <a href="#submit" className={styles.contributeCta}>SUBMIT YOUR TEMPLATE →</a>
         </div>
       </section>
 
