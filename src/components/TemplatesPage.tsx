@@ -208,26 +208,21 @@ export default function TemplatesPage() {
       <section className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerLeft}>
-            <p className={styles.headerLabel}>COMMUNITY</p>
-            <h1 className={styles.headerTitle}>TEMPLATES</h1>
+            <h1 className={styles.headerTitle}>템플릿</h1>
             <p className={styles.headerSub}>
-              커뮤니티가 만든 템플릿을 탐색하고 나만의 포트폴리오를 시작하세요.
+              사용자가 만든 템플릿을 탐색하고 나만의 포트폴리오를 시작하세요.
             </p>
           </div>
           <div className={styles.headerRight}>
             <div className={styles.headerStats}>
               <div className={styles.statItem}>
                 <div className={styles.statNum}>{communityTemplates.length}+</div>
-                <div className={styles.statLabel}>TEMPLATES</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statNum}>340+</div>
-                <div className={styles.statLabel}>CONTRIBUTORS</div>
+                <div className={styles.statLabel}>템플릿</div>
               </div>
             </div>
             <a href="#submit" className={styles.submitBtn}>
               <PlusIcon />
-              SUBMIT TEMPLATE
+              템플릿 제출
             </a>
           </div>
         </div>
@@ -251,13 +246,13 @@ export default function TemplatesPage() {
             className={`${styles.sortBtn} ${sort === 'popular' ? styles.sortBtnActive : ''}`}
             onClick={() => setSort('popular')}
           >
-            POPULAR
+            인기순
           </button>
           <button
             className={`${styles.sortBtn} ${sort === 'newest' ? styles.sortBtnActive : ''}`}
             onClick={() => setSort('newest')}
           >
-            NEWEST
+            최신순
           </button>
         </div>
       </div>
@@ -274,7 +269,7 @@ export default function TemplatesPage() {
               {tpl.isNew && <div className={styles.newBadge}>NEW</div>}
               {tpl.component}
               <div className={styles.cardOverlay}>
-                <span className={styles.overlayText}>USE TEMPLATE</span>
+                <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
             </div>
             <div className={styles.cardFooter}>
@@ -299,7 +294,7 @@ export default function TemplatesPage() {
       <section className={styles.contributeSect}>
         <div className={styles.contributeInner}>
           <div>
-            <p className={styles.contributeLabel}>CONTRIBUTE</p>
+            <p className={styles.contributeLabel}>기여하기</p>
             <h2 className={styles.contributeTitle}>당신의 템플릿을 공유하세요.</h2>
             <p className={styles.contributeDesc}>
               직접 만든 포트폴리오 디자인을 커뮤니티와 함께 나누세요.<br />

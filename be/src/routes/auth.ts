@@ -101,4 +101,64 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * POST /api/auth/google
+ * 프론트엔드에서 받은 OAuth code를 Google access_token으로 교환합니다.
+ *
+ * Body: { code: string, redirect_uri: string }
+ */
+router.post('/google', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code, redirect_uri } = req.body as { code?: string; redirect_uri?: string };
+
+    if (!code || !redirect_uri) {
+      res.status(400).json({ success: false, message: 'code와 redirect_uri가 필요합니다.' });
+      return;
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      res.status(500).json({ success: false, message: 'Google OAuth 설정이 되어 있지 않습니다.' });
+      return;
+    }
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = await tokenRes.json() as {
+      access_token?: string;
+      id_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+
+    if (tokenData.error) {
+      res.status(400).json({
+        success: false,
+        message: tokenData.error_description ?? 'Google 인증 실패',
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      access_token: tokenData.access_token,
+      id_token: tokenData.id_token,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

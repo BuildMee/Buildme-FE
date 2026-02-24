@@ -15,12 +15,15 @@ export default function GitHubCallbackPage() {
     const error = params.get('error');
     const errorDesc = params.get('error_description');
 
+    const provider = sessionStorage.getItem('oauth_provider') ?? 'github';
+
     // 처리 후 URL에서 민감한 파라미터 즉시 제거
     window.history.replaceState(null, '', window.location.pathname);
     sessionStorage.removeItem('oauth_state');
+    sessionStorage.removeItem('oauth_provider');
 
     if (error) {
-      setErrorMsg(errorDesc || 'GitHub 인증이 취소되었습니다.');
+      setErrorMsg(errorDesc || '인증이 취소되었습니다.');
       setStatus('error');
       return;
     }
@@ -31,16 +34,21 @@ export default function GitHubCallbackPage() {
       return;
     }
 
+    const endpoint = provider === 'google'
+      ? 'http://localhost:3001/api/auth/google'
+      : 'http://localhost:3001/api/auth/github';
+
     // 백엔드에 code를 전송해 access_token 교환
-    fetch('http://localhost:3001/api/auth/github', {
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, redirect_uri: window.location.origin }),
     })
       .then((res) => res.json())
       .then((data: { success: boolean; access_token?: string; message?: string }) => {
         if (data.success && data.access_token) {
           sessionStorage.setItem('access_token', data.access_token);
+          sessionStorage.setItem('auth_provider', provider);
           setStatus('success');
         } else {
           setErrorMsg(data.message || '토큰 발급에 실패했습니다.');
