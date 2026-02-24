@@ -88,3 +88,138 @@
     padding: 0 24px;
   }
 }
+
+/* ── 로그인 모달 ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in 0.15s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: var(--color-white);
+  width: 100%;
+  max-width: 400px;
+  padding: 48px 40px 40px;
+  position: relative;
+  animation: slide-up 0.2s ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modalClose {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modalClose:hover {
+  color: var(--color-black);
+}
+
+.modalLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--color-gray-400);
+  margin-bottom: 10px;
+}
+
+.modalTitle {
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--color-black);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.modalDesc {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--color-gray-600);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.modalBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.githubBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 2px solid var(--color-black);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.githubBtn:hover {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 2px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.googleBtn:hover {
+  border-color: var(--color-black);
+}
+
+.modalHint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-gray-400);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.modalHint span {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
