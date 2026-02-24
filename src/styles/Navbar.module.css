@@ -1,0 +1,90 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 72px;
+  background: transparent;
+  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.navLinks {
+  display: flex;
+  gap: 32px;
+}
+
+.navLink {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--color-gray-400);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: var(--color-black);
+}
+
+.navLinkActive {
+  color: var(--color-black);
+}
+
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  color: var(--color-black);
+}
+
+.ctaButton {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  padding: 10px 28px;
+  background: var(--color-black);
+  color: var(--color-white);
+  border: 1px solid var(--color-black);
+  transition: all 0.2s ease;
+}
+
+.ctaButton:hover {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 24px;
+  }
+}

@@ -1,0 +1,101 @@
+.section {
+  background: var(--color-black);
+  color: var(--color-white);
+  padding: 120px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  margin-bottom: 80px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+
+.step {
+  position: relative;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stepNumber {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 10vw, 8rem);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.06);
+  position: absolute;
+  top: -20px;
+  right: 0;
+  pointer-events: none;
+}
+
+.stepKeyword {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-blue);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.stepTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.stepDesc {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+}
+
+.connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.connectorLine {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+.connectorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  margin: 0 24px;
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 64px;
+  }
+
+  .section {
+    padding: 80px 24px;
+  }
+
+  .connector {
+    display: none;
+  }
+}

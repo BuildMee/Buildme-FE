@@ -1,0 +1,125 @@
+.section {
+  background: var(--color-black);
+  padding: 120px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  color: var(--color-white);
+  margin-bottom: 64px;
+}
+
+.terminal {
+  background: #111111;
+  border: 1px solid #222222;
+  border-radius: 4px;
+  max-width: 800px;
+  overflow: hidden;
+}
+
+.terminalHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: #0D0D0D;
+  border-bottom: 1px solid #222222;
+}
+
+.terminalDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #333333;
+}
+
+.terminalDot:first-child { background: #FF5F57; }
+.terminalDot:nth-child(2) { background: #FEBC2E; }
+.terminalDot:nth-child(3) { background: #28C840; }
+
+.terminalTitle {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-gray-600);
+  margin-left: 12px;
+}
+
+.terminalBody {
+  padding: 28px 24px;
+  min-height: 320px;
+}
+
+.line {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 2;
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.prompt {
+  color: var(--color-terminal-green);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.command {
+  color: var(--color-white);
+}
+
+.output {
+  color: var(--color-gray-400);
+}
+
+.highlight {
+  color: var(--color-blue);
+}
+
+.success {
+  color: var(--color-terminal-green);
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--color-terminal-green);
+  animation: blink 1s infinite;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 80px 24px;
+  }
+
+  .terminalBody {
+    padding: 20px 16px;
+  }
+
+  .line {
+    font-size: 0.75rem;
+  }
+}

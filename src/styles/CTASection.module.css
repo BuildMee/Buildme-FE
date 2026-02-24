@@ -1,0 +1,72 @@
+.section {
+  background: var(--color-black);
+  padding: 160px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.bgMark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1;
+  color: var(--color-white);
+  margin-bottom: 24px;
+}
+
+.sub {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--color-gray-400);
+  margin-bottom: 48px;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 18px 44px;
+  background: var(--color-white);
+  color: var(--color-black);
+  border: 2px solid var(--color-white);
+  transition: all 0.25s ease;
+  letter-spacing: 0.01em;
+}
+
+.ctaBtn:hover {
+  background: transparent;
+  color: var(--color-white);
+}
+
+.ctaBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 100px 24px;
+  }
+}

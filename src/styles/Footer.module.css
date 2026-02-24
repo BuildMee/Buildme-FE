@@ -1,0 +1,68 @@
+.footer {
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-200);
+  padding: 48px;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.logoText {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--color-black);
+}
+
+.copy {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-gray-400);
+  letter-spacing: 0.05em;
+}
+
+.links {
+  display: flex;
+  gap: 32px;
+}
+
+.link {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--color-black);
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 36px 24px;
+  }
+
+  .inner {
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+  }
+}

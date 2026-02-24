@@ -1,0 +1,94 @@
+.section {
+  background: var(--color-white);
+  padding: 120px 48px;
+  position: relative;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-black);
+  margin-bottom: 80px;
+  max-width: 600px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  background: var(--color-gray-200);
+  border: 1px solid var(--color-gray-200);
+}
+
+.card {
+  background: var(--color-white);
+  padding: 48px 40px;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.card:hover {
+  background: var(--color-gray-100);
+}
+
+.cardNumber {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  line-height: 1;
+  color: var(--color-gray-200);
+  margin-bottom: 24px;
+  transition: color 0.3s ease;
+}
+
+.card:hover .cardNumber {
+  color: var(--color-blue);
+}
+
+.cardIcon {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-gray-200);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.cardDesc {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 80px 24px;
+  }
+}
