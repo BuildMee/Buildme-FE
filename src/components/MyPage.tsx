@@ -62,7 +62,8 @@ export default function MyPage() {
         })
         .catch(() => {});
     } else {
-      fetch('http://localhost:3001/api/auth/me', {
+      const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
+      fetch(`${apiBase}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())

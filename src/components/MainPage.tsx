@@ -1,26 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { GitHubIcon, UploadIcon } from './Icons';
+import { handleGitHubLogin } from '../utils/auth';
 import styles from '../styles/MainPage.module.css';
-
-const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined;
-
-function handleGitHubLogin() {
-  if (!GITHUB_CLIENT_ID) {
-    console.error('VITE_GITHUB_CLIENT_ID 환경변수가 설정되지 않았습니다.');
-    return;
-  }
-
-  const state = crypto.randomUUID();
-  sessionStorage.setItem('oauth_state', state);
-
-  const params = new URLSearchParams({
-    client_id: GITHUB_CLIENT_ID,
-    scope: 'read:user,repo',
-    state,
-  });
-  window.location.href = `https://github.com/login/oauth/authorize?${params.toString()}`;
-}
 
 /* ===== Types ===== */
 type Category = 'all' | 'minimal' | 'dark' | 'creative' | 'tech';
@@ -29,7 +12,7 @@ interface Template {
   id: string;
   name: string;
   category: 'minimal' | 'dark' | 'creative' | 'tech';
-  component: React.ReactNode;
+  Preview: React.ComponentType;
 }
 
 /* ===== Mini-preview components (pure CSS) ===== */
@@ -147,12 +130,12 @@ function PreviewMagazine() {
 
 /* ===== Template data ===== */
 const templates: Template[] = [
-  { id: 'minimal-dark', name: 'Minimal Dark', category: 'dark', component: <PreviewMinimalDark /> },
-  { id: 'clean-white', name: 'Clean White', category: 'minimal', component: <PreviewCleanWhite /> },
-  { id: 'blue-accent', name: 'Blue Accent', category: 'creative', component: <PreviewBlueAccent /> },
-  { id: 'terminal', name: 'Terminal', category: 'tech', component: <PreviewTerminal /> },
-  { id: 'grid', name: 'Grid', category: 'minimal', component: <PreviewGrid /> },
-  { id: 'magazine', name: 'Magazine', category: 'creative', component: <PreviewMagazine /> },
+  { id: 'minimal-dark', name: 'Minimal Dark', category: 'dark', Preview: PreviewMinimalDark },
+  { id: 'clean-white', name: 'Clean White', category: 'minimal', Preview: PreviewCleanWhite },
+  { id: 'blue-accent', name: 'Blue Accent', category: 'creative', Preview: PreviewBlueAccent },
+  { id: 'terminal', name: 'Terminal', category: 'tech', Preview: PreviewTerminal },
+  { id: 'grid', name: 'Grid', category: 'minimal', Preview: PreviewGrid },
+  { id: 'magazine', name: 'Magazine', category: 'creative', Preview: PreviewMagazine },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
@@ -272,7 +255,7 @@ export default function MainPage() {
               data-id={tpl.id}
               className={`${styles.templateCard} ${visibleCards.has(tpl.id) ? styles.cardVisible : ''} ${STAGGER[idx] ?? ''}`}
             >
-              {tpl.component}
+              <tpl.Preview />
               <div className={styles.cardOverlay}>
                 <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
@@ -312,21 +295,3 @@ export default function MainPage() {
   );
 }
 
-/* ===== Inline SVG icons ===== */
-function UploadIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-    </svg>
-  );
-}
