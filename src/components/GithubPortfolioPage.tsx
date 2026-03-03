@@ -98,6 +98,7 @@ export default function GithubPortfolioPage() {
 
   const handleGenerate = async () => {
     if (!token || selectedRepos.size === 0) return;
+    const resolvedRole = major === '기타' ? customMajor.trim() : major;
     setStep('generating');
     setError('');
     try {
@@ -116,13 +117,13 @@ export default function GithubPortfolioPage() {
       const res = await fetch(`${apiBase}/api/ai/generate-portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName, major: major === '기타' ? customMajor : major, repos: details.filter(Boolean) }),
+        body: JSON.stringify({ userName, major: resolvedRole, repos: details.filter(Boolean) }),
       });
       const data = await res.json() as { success: boolean; portfolio?: GeneratedPortfolio; message?: string };
 
       if (data.success && data.portfolio) {
         setPortfolio(data.portfolio);
-        savePortfolioData({ name: userName, role: major === '기타' ? customMajor : major, ...data.portfolio });
+        savePortfolioData({ name: userName, role: resolvedRole, ...data.portfolio });
         setStep('done');
       } else {
         setError(data.message ?? '생성에 실패했습니다.');
