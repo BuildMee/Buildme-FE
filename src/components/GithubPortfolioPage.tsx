@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
+import { savePortfolioData, getSelectedTemplate, clearAiDesign } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
 
 type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
@@ -451,7 +451,7 @@ export default function GithubPortfolioPage() {
                     다시 선택하기
                   </button>
                   <button className={styles.nextBtn} style={{ background: '#fff', color: '#000' }}
-                    onClick={() => { window.location.hash = 'portfolio-result'; }}>
+                    onClick={() => { clearAiDesign(); window.location.hash = 'portfolio-result'; }}>
                     포트폴리오 확인하기 →
                   </button>
                 </div>

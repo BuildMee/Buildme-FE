@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData } from '../utils/templates';
+import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData, clearAiDesign } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
 import { PREVIEWS } from './TemplatePreviews';
 
@@ -346,6 +346,7 @@ export default function ResumePage() {
                     }).catch(() => {});
                   }
 
+                  clearAiDesign();
                   window.location.hash = 'portfolio-result';
                 }}
               >

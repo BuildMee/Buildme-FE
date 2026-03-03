@@ -1,6 +1,12 @@
 import type { PortfolioData } from './templates';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
+const API_BASE: string =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.DEV ? 'http://localhost:3001' : '');
+
+if (!API_BASE) {
+  throw new Error('VITE_API_BASE_URL is required in production');
+}
 
 function getToken(): string | null {
   return sessionStorage.getItem('access_token');

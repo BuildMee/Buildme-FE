@@ -90,10 +90,28 @@ export function saveAiDesign(design: AiDesign) {
   sessionStorage.setItem('ai_design', JSON.stringify(design));
 }
 
+function isAiDesign(value: unknown): value is AiDesign {
+  const v = value as AiDesign;
+  return (
+    !!v &&
+    typeof v.theme === 'string' &&
+    typeof v.primaryColor === 'string' &&
+    typeof v.accentColor === 'string' &&
+    typeof v.backgroundColor === 'string' &&
+    typeof v.textColor === 'string' &&
+    typeof v.fontStyle === 'string' &&
+    typeof v.layout === 'string' &&
+    typeof v.mood === 'string'
+  );
+}
+
 export function getAiDesign(): AiDesign | null {
   const raw = sessionStorage.getItem('ai_design');
   if (!raw) return null;
-  try { return JSON.parse(raw) as AiDesign; } catch { return null; }
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return isAiDesign(parsed) ? parsed : null;
+  } catch { return null; }
 }
 
 export function clearAiDesign() {
