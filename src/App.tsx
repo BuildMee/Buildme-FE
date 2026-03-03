@@ -9,8 +9,9 @@ import GithubPortfolioPage from './components/GithubPortfolioPage';
 import TemplateSelectPage from './components/TemplateSelectPage';
 import PortfolioResultPage from './components/PortfolioResultPage';
 import PublicPortfolioPage from './components/PublicPortfolioPage';
+import PortfolioEditPage from './components/PortfolioEditPage';
 
-type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public';
+type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'portfolio-edit';
 
 function getPage(): Page {
   const params = new URLSearchParams(window.location.search);
@@ -28,6 +29,7 @@ function getPage(): Page {
   if (window.location.hash === '#template-select') return 'template-select';
   if (window.location.hash === '#portfolio-result') return 'portfolio-result';
   if (window.location.hash.startsWith('#portfolio-public/')) return 'portfolio-public';
+  if (window.location.hash === '#portfolio-edit') return 'portfolio-edit';
   return 'home';
 }
 
@@ -52,5 +54,6 @@ export default function App() {
   if (page === 'template-select') return <TemplateSelectPage />;
   if (page === 'portfolio-result') return <PortfolioResultPage />;
   if (page === 'portfolio-public') return <PublicPortfolioPage />;
+  if (page === 'portfolio-edit') return <PortfolioEditPage />;
   return <MainPage />;
 }

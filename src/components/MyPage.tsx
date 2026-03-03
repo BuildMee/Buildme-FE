@@ -94,6 +94,11 @@ export default function MyPage() {
     window.location.hash = '#portfolio-result';
   };
 
+  const editPortfolio = (p: SavedPortfolio) => {
+    sessionStorage.setItem('editing_portfolio', JSON.stringify(p));
+    window.location.hash = '#portfolio-edit';
+  };
+
   return (
     <div className={styles.page}>
       <Navbar />
@@ -153,6 +158,7 @@ export default function MyPage() {
                     </div>
                     <div className={styles.itemActions}>
                       <button className={styles.editBtn} onClick={() => previewPortfolio(p)}>미리보기</button>
+                      <button className={styles.editBtn} onClick={() => editPortfolio(p)}>편집</button>
                       <button className={styles.deleteBtn} onClick={() => deletePortfolio(p.id)}>삭제</button>
                     </div>
                   </div>
