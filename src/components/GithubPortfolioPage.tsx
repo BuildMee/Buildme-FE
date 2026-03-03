@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
+import { savePortfolioData } from '../utils/templates';
 
 type Step = 'select' | 'role' | 'detail' | 'generating' | 'done';
 
@@ -97,6 +98,12 @@ export default function GithubPortfolioPage() {
 
   const handleGenerate = async () => {
     if (!token || selectedRepos.size === 0) return;
+    const resolvedRole = major === '기타' ? customMajor.trim() : major;
+    if (!resolvedRole) {
+      setError('직군을 입력해주세요.');
+      setStep('role');
+      return;
+    }
     setStep('generating');
     setError('');
     try {
@@ -115,12 +122,13 @@ export default function GithubPortfolioPage() {
       const res = await fetch(`${apiBase}/api/ai/generate-portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName, major: major === '기타' ? customMajor : major, repos: details.filter(Boolean) }),
+        body: JSON.stringify({ userName, major: resolvedRole, repos: details.filter(Boolean) }),
       });
       const data = await res.json() as { success: boolean; portfolio?: GeneratedPortfolio; message?: string };
 
       if (data.success && data.portfolio) {
         setPortfolio(data.portfolio);
+        savePortfolioData({ name: userName, role: resolvedRole, ...data.portfolio });
         setStep('done');
       } else {
         setError(data.message ?? '생성에 실패했습니다.');
@@ -393,7 +401,7 @@ export default function GithubPortfolioPage() {
             </div>
 
             <div className={styles.doneActions}>
-              <a href="#templates" className={styles.nextBtn}>템플릿 선택하기 →</a>
+              <button className={styles.nextBtn} onClick={() => { window.location.hash = 'portfolio-result'; }}>포트폴리오 확인하기 →</button>
               <button className={styles.cancelBtn} onClick={() => { setStep('select'); setPortfolio(null); setSelectedRepos(new Set()); setRepoDetails({}); setMajor(''); }}>
                 다시 선택하기
               </button>

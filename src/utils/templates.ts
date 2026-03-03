@@ -29,3 +29,57 @@ export function getSelectedTemplate(): string | null {
 export function clearSelectedTemplate() {
   sessionStorage.removeItem('selected_template');
 }
+
+export interface PortfolioData {
+  name: string;
+  role: string;
+  intro: string;
+  skills: string[];
+  projects: {
+    name: string;
+    description: string;
+    tech: string[];
+    highlights: string;
+  }[];
+  summary: string;
+  github?: string;
+  blog?: string;
+}
+
+export function savePortfolioData(data: PortfolioData) {
+  sessionStorage.setItem('portfolio_data', JSON.stringify(data));
+}
+
+function isPortfolioProject(value: unknown): value is PortfolioData['projects'][number] {
+  const p = value as PortfolioData['projects'][number];
+  return !!p
+    && typeof p.name === 'string'
+    && typeof p.description === 'string'
+    && Array.isArray(p.tech)
+    && p.tech.every((t) => typeof t === 'string')
+    && typeof p.highlights === 'string';
+}
+
+function isPortfolioData(value: unknown): value is PortfolioData {
+  const v = value as PortfolioData;
+  return !!v
+    && typeof v.name === 'string'
+    && typeof v.role === 'string'
+    && typeof v.intro === 'string'
+    && typeof v.summary === 'string'
+    && Array.isArray(v.skills)
+    && v.skills.every((s) => typeof s === 'string')
+    && Array.isArray(v.projects)
+    && v.projects.every(isPortfolioProject)
+    && (v.github === undefined || typeof v.github === 'string')
+    && (v.blog === undefined || typeof v.blog === 'string');
+}
+
+export function getPortfolioData(): PortfolioData | null {
+  const raw = sessionStorage.getItem('portfolio_data');
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return isPortfolioData(parsed) ? parsed : null;
+  } catch { return null; }
+}
