@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate } from '../utils/templates';
+import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData } from '../utils/templates';
 import { PREVIEWS } from './TemplatePreviews';
 
 type Step = 'upload' | 'info' | 'detail' | 'template' | 'done';
@@ -321,7 +321,24 @@ export default function ResumePage() {
               포트폴리오 초안이 준비됐어요.
             </p>
             <div className={styles.doneActions}>
-              <button className={styles.nextBtn} onClick={() => { window.location.hash = 'portfolio-result'; }}>포트폴리오 확인하기 →</button>
+              <button
+                className={styles.nextBtn}
+                onClick={() => {
+                  savePortfolioData({
+                    name,
+                    role,
+                    intro: bio,
+                    skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+                    projects: [],
+                    summary: highlights,
+                    github: github || undefined,
+                    blog: blog || undefined,
+                  });
+                  window.location.hash = 'portfolio-result';
+                }}
+              >
+                포트폴리오 확인하기 →
+              </button>
             </div>
           </div>
         )}
