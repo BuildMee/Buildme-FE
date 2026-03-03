@@ -8,6 +8,7 @@ type Status = 'loading' | 'success' | 'error';
 export default function GitHubCallbackPage() {
   const [status, setStatus] = useState<Status>('loading');
   const [errorMsg, setErrorMsg] = useState('');
+  const [provider, setProvider] = useState<string>('github');
   const handled = useRef(false);
 
   useEffect(() => {
@@ -18,7 +19,8 @@ export default function GitHubCallbackPage() {
     const error = params.get('error');
     const errorDesc = params.get('error_description');
 
-    const provider = sessionStorage.getItem('oauth_provider') ?? 'github';
+    const detectedProvider = sessionStorage.getItem('oauth_provider') ?? 'github';
+    setProvider(detectedProvider);
 
     // 처리 후 URL에서 민감한 파라미터 즉시 제거
     window.history.replaceState(null, '', window.location.pathname);
@@ -38,7 +40,7 @@ export default function GitHubCallbackPage() {
     }
 
     const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
-    const endpoint = provider === 'google'
+    const endpoint = detectedProvider === 'google'
       ? `${apiBase}/api/auth/google`
       : `${apiBase}/api/auth/github`;
 
@@ -73,9 +75,9 @@ export default function GitHubCallbackPage() {
           {status === 'loading' && (
             <>
               <div className={styles.spinner} />
-              <p className={styles.label}>GITHUB CONNECTING</p>
+              <p className={styles.label}>{provider === 'google' ? 'GOOGLE CONNECTING' : 'GITHUB CONNECTING'}</p>
               <h2 className={styles.title}>연결 중...</h2>
-              <p className={styles.desc}>GitHub 계정을 인증하고 있습니다.</p>
+              <p className={styles.desc}>{provider === 'google' ? 'Google 계정을 인증하고 있습니다.' : 'GitHub 계정을 인증하고 있습니다.'}</p>
             </>
           )}
 
@@ -85,8 +87,8 @@ export default function GitHubCallbackPage() {
               <p className={styles.label}>CONNECTED</p>
               <h2 className={styles.title}>연결 완료</h2>
               <p className={styles.desc}>
-                GitHub 계정이 연결되었습니다.<br />
-                이제 레포지토리를 분석해 포트폴리오를 만들 수 있어요.
+                {provider === 'google' ? 'Google 계정이 연결되었습니다.' : 'GitHub 계정이 연결되었습니다.'}<br />
+                {provider === 'google' ? '이제 포트폴리오를 만들 수 있어요.' : '이제 레포지토리를 분석해 포트폴리오를 만들 수 있어요.'}
               </p>
               <div className={styles.actions}>
                 <button
