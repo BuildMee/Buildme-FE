@@ -5,8 +5,10 @@ import SubmitPage from './components/SubmitPage';
 import ResumePage from './components/ResumePage';
 import GitHubCallbackPage from './components/GitHubCallbackPage';
 import MyPage from './components/MyPage';
+import GithubPortfolioPage from './components/GithubPortfolioPage';
+import TemplateSelectPage from './components/TemplateSelectPage';
 
-type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage';
+type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select';
 
 function getPage(): Page {
   const params = new URLSearchParams(window.location.search);
@@ -20,6 +22,8 @@ function getPage(): Page {
   if (window.location.hash === '#submit') return 'submit';
   if (window.location.hash === '#resume') return 'resume';
   if (window.location.hash === '#mypage') return 'mypage';
+  if (window.location.hash === '#github-portfolio') return 'github-portfolio';
+  if (window.location.hash === '#template-select') return 'template-select';
   return 'home';
 }
 
@@ -40,5 +44,7 @@ export default function App() {
   if (page === 'submit') return <SubmitPage />;
   if (page === 'resume') return <ResumePage />;
   if (page === 'mypage') return <MyPage />;
+  if (page === 'github-portfolio') return <GithubPortfolioPage />;
+  if (page === 'template-select') return <TemplateSelectPage />;
   return <MainPage />;
 }

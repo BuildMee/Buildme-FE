@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/TemplatesPage.module.css';
+import { saveSelectedTemplate } from '../utils/templates';
 
 type Category = 'all' | 'minimal' | 'dark' | 'creative' | 'tech';
 type SortKey = 'popular' | 'newest';
@@ -268,7 +269,7 @@ export default function TemplatesPage() {
             <div className={styles.previewWrapper}>
               {tpl.isNew && <div className={styles.newBadge}>NEW</div>}
               {tpl.component}
-              <div className={styles.cardOverlay}>
+              <div className={styles.cardOverlay} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }} style={{ cursor: 'pointer' }}>
                 <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
             </div>
@@ -283,7 +284,7 @@ export default function TemplatesPage() {
                   <HeartIcon />
                   {tpl.likes >= 1000 ? `${(tpl.likes / 1000).toFixed(1)}k` : tpl.likes}
                 </button>
-                <button className={styles.useBtn}>사용하기</button>
+                <button className={styles.useBtn} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
               </div>
             </div>
           </div>

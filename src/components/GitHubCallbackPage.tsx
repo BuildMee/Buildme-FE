@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/GitHubCallbackPage.module.css';
@@ -8,8 +8,11 @@ type Status = 'loading' | 'success' | 'error';
 export default function GitHubCallbackPage() {
   const [status, setStatus] = useState<Status>('loading');
   const [errorMsg, setErrorMsg] = useState('');
+  const handled = useRef(false);
 
   useEffect(() => {
+    if (handled.current) return;
+    handled.current = true;
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const error = params.get('error');

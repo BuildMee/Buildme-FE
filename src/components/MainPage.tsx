@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import { GitHubIcon, UploadIcon } from './Icons';
 import { handleGitHubLogin } from '../utils/auth';
+import { saveSelectedTemplate, TEMPLATES } from '../utils/templates';
 import styles from '../styles/MainPage.module.css';
 
 /* ===== Types ===== */
@@ -155,15 +156,66 @@ const STAGGER: Record<number, string> = {
   5: styles.stagger5,
 };
 
+interface AiDesign {
+  theme: string;
+  primaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  fontStyle: string;
+  layout: string;
+  mood: string;
+}
+
 /* ===== Main Page Component ===== */
 export default function MainPage() {
   const [activeFilter, setActiveFilter] = useState<Category>('all');
   const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<AiDesign | null>(null);
+  const [aiError, setAiError] = useState('');
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [pickedTemplate, setPickedTemplate] = useState('');
+  const isLoggedIn = !!sessionStorage.getItem('access_token');
+
+  const handleResumeStart = () => { window.location.hash = 'template-select'; };
+
+  const handleTemplateConfirm = () => {
+    if (pickedTemplate) saveSelectedTemplate(pickedTemplate);
+    setShowTemplateModal(false);
+    window.location.hash = 'resume';
+  };
 
   const filtered = activeFilter === 'all'
     ? templates
     : templates.filter((t) => t.category === activeFilter);
+
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) return;
+    setAiLoading(true);
+    setAiResult(null);
+    setAiError('');
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
+      const res = await fetch(`${apiBase}/api/ai/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt }),
+      });
+      const data = await res.json() as { success: boolean; design?: AiDesign; message?: string };
+      if (data.success && data.design) {
+        setAiResult(data.design);
+      } else {
+        setAiError(data.message ?? '생성에 실패했습니다.');
+      }
+    } catch {
+      setAiError('서버 연결에 실패했습니다.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   /* Intersection Observer for staggered card entrance */
   useEffect(() => {
@@ -198,21 +250,24 @@ export default function MainPage() {
       {/* ===== Hero ===== */}
       <section className={styles.hero}>
         <div className={styles.heroLeft}>
-          <h1 className={styles.heroHeadline}>포트폴리오를<br />만들어보세요.</h1>
+          <h1 className={styles.heroHeadline}>GitHub에 쌓인 당신의 시간.<br />이제 하나의 작품으로.</h1>
           <p className={styles.heroSub}>
-            GitHub 연동 또는 이력서 업로드만으로<br />AI가 5분 안에 포트폴리오 초안을 완성합니다.
+            GitHub 연동 또는 이력서 업로드를 통해<br />당신만의 작품을 만들어보세요.
           </p>
           <div className={styles.heroCtas}>
             <div className={styles.heroCtaRow}>
-              <button className={styles.btnPrimary} onClick={handleGitHubLogin}>
+              <button
+                className={styles.btnPrimary}
+                onClick={isLoggedIn ? () => { window.location.hash = 'github-portfolio'; } : handleGitHubLogin}
+              >
                 <GitHubIcon />
-                GitHub으로 시작하기
+                {isLoggedIn ? '프로젝트 선택하기' : 'GitHub으로 시작하기'}
               </button>
               <span className={styles.ctaDivider}>또는</span>
-              <a href="#resume" className={styles.btnOutline}>
+              <button className={styles.btnOutline} onClick={handleResumeStart}>
                 <UploadIcon />
                 이력서로 시작하기
-              </a>
+              </button>
             </div>
             <button className={styles.btnGhost}>템플릿 둘러보기 →</button>
           </div>
@@ -256,7 +311,7 @@ export default function MainPage() {
               className={`${styles.templateCard} ${visibleCards.has(tpl.id) ? styles.cardVisible : ''} ${STAGGER[idx] ?? ''}`}
             >
               <tpl.Preview />
-              <div className={styles.cardOverlay}>
+              <div className={styles.cardOverlay} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }} style={{ cursor: 'pointer' }}>
                 <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
               <div className={styles.cardFooter}>
@@ -264,7 +319,7 @@ export default function MainPage() {
                   <div className={styles.cardName}>{tpl.name}</div>
                   <div className={styles.cardCategory}>{tpl.category}</div>
                 </div>
-                <button className={styles.useBtn}>사용하기</button>
+                <button className={styles.useBtn} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
               </div>
             </div>
           ))}
@@ -284,13 +339,115 @@ export default function MainPage() {
               className={styles.aiInput}
               placeholder="미니멀하고 다크한 개발자 포트폴리오"
               type="text"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAiGenerate(); }}
             />
-            <button className={styles.aiSubmit}>생성하기</button>
+            <button className={styles.aiSubmit} onClick={handleAiGenerate} disabled={aiLoading}>
+              {aiLoading ? '생성 중...' : '생성하기'}
+            </button>
           </div>
+          {aiError && <p style={{ color: '#ff6b6b', marginTop: 16, fontSize: 14 }}>{aiError}</p>}
+          {aiResult && (
+            <div style={{
+              marginTop: 24,
+              padding: 24,
+              borderRadius: 12,
+              background: aiResult.backgroundColor,
+              color: aiResult.textColor,
+              border: `2px solid ${aiResult.accentColor}`,
+            }}>
+              <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 8, fontFamily: 'monospace' }}>
+                AI GENERATED DESIGN
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: aiResult.primaryColor }}>
+                {aiResult.mood}
+              </div>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13 }}>
+                <span>레이아웃: {aiResult.layout}</span>
+                <span>폰트: {aiResult.fontStyle}</span>
+                <span>테마: {aiResult.theme}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  주색상: <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, background: aiResult.primaryColor }} />
+                  {aiResult.primaryColor}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  강조색: <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, background: aiResult.accentColor }} />
+                  {aiResult.accentColor}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       <Footer />
+
+      {/* ── 템플릿 선택 모달 ── */}
+      {showTemplateModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowTemplateModal(false); }}
+        >
+          <div style={{
+            background: '#fff', borderRadius: 16, width: '100%', maxWidth: 560,
+            maxHeight: '80vh', overflowY: 'auto',
+            padding: '32px 28px',
+          }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>템플릿 선택</h2>
+            <p style={{ fontSize: 14, color: '#888', marginBottom: 20 }}>
+              원하는 템플릿을 골라주세요. 나중에 바꿀 수 있어요.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 24 }}>
+              {TEMPLATES.map((t) => (
+                <div
+                  key={t.id}
+                  onClick={() => setPickedTemplate(t.id)}
+                  style={{
+                    padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
+                    border: pickedTemplate === t.id ? '2px solid #000' : '2px solid #e8e8e8',
+                    background: pickedTemplate === t.id ? '#f8f8f8' : '#fff',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 3 }}>{t.name}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>{t.description}</div>
+                  <span style={{ fontSize: 11, padding: '2px 8px', background: '#f0f0f0', borderRadius: 10, color: '#666' }}>{t.category}</span>
+                  {pickedTemplate === t.id && <span style={{ float: 'right', fontSize: 15 }}>✓</span>}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button
+                onClick={() => { setPickedTemplate(''); handleTemplateConfirm(); }}
+                style={{
+                  padding: '10px 18px', border: '1px solid #ddd', borderRadius: 8,
+                  background: '#fff', cursor: 'pointer', fontSize: 14, color: '#666',
+                }}
+              >
+                나중에 선택
+              </button>
+              <button
+                onClick={handleTemplateConfirm}
+                disabled={!pickedTemplate}
+                style={{
+                  padding: '10px 22px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                  border: 'none', cursor: pickedTemplate ? 'pointer' : 'not-allowed',
+                  background: pickedTemplate ? '#000' : '#ccc', color: '#fff',
+                  transition: 'background 0.15s',
+                }}
+              >
+                이력서 업로드하기 →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

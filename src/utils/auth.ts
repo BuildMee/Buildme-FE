@@ -11,7 +11,7 @@ export function handleGitHubLogin() {
   sessionStorage.setItem('oauth_provider', 'github');
   const params = new URLSearchParams({
     client_id: GITHUB_CLIENT_ID,
-    scope: 'read:user,repo',
+    scope: 'read:user,repo,read:org',
     state,
   });
   window.location.href = `https://github.com/login/oauth/authorize?${params.toString()}`;

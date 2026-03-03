@@ -31,12 +31,14 @@
 }
 
 .heroHeadline {
-  font-family: var(--font-display);
-  font-size: 96px;
-  line-height: 1;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 58px;
+  line-height: 1.15;
   color: var(--color-black);
   margin-bottom: 24px;
   letter-spacing: -1px;
+  white-space: nowrap;
 }
 
 .heroSub {
