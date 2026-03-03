@@ -199,9 +199,10 @@ export default function TemplatesPage() {
       alert('좋아요는 로그인 후 이용할 수 있어요.');
       return;
     }
+    const wasLiked = liked.has(id);
     setLiked((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
+      if (wasLiked) {
         next.delete(id);
       } else {
         next.add(id);
@@ -211,7 +212,7 @@ export default function TemplatesPage() {
     });
     setLikeCounts((prev) => ({
       ...prev,
-      [id]: prev[id] + (liked.has(id) ? -1 : 1),
+      [id]: prev[id] + (wasLiked ? -1 : 1),
     }));
     setPoppedId(id);
     setTimeout(() => setPoppedId(null), 250);

@@ -338,14 +338,14 @@
   color: #c0392b;
 }
 
-@keyframes likePop {
+@keyframes like-pop {
   0%   { transform: scale(1); }
   40%  { transform: scale(1.35); }
   100% { transform: scale(1); }
 }
 
 .likePop {
-  animation: likePop 0.25s ease;
+  animation: like-pop 0.25s ease;
 }
 
 .useBtn {
