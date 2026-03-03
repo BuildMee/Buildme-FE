@@ -1,7 +1,8 @@
-import { ComponentType, useEffect } from 'react';
-import Navbar from './Navbar';
+import { ComponentType, useEffect, useState } from 'react';
+import Logo from './Logo';
 import { getPortfolioData, getSelectedTemplate, getAiDesign, clearAiDesign } from '../utils/templates';
 import type { PortfolioData, AiDesign } from '../utils/templates';
+import { sharePortfolio } from '../utils/portfolioApi';
 
 /* ── 템플릿별 레이아웃 ── */
 
@@ -393,7 +394,7 @@ function AiCustom({ data, design }: { data: PortfolioData; design: AiDesign }) {
 }
 
 /* ── 템플릿 맵 ── */
-const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
+export const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
   'minimal-dark': MinimalDark,
   'clean-white':  CleanWhite,
   'blue-accent':  BlueAccent,
@@ -412,10 +413,46 @@ export default function PortfolioResultPage() {
   const aiDesign = getAiDesign();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
 
+  const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied' | 'clipboard-error' | 'api-error'>('idle');
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
   // ai_design을 한 번 소비한 뒤 정리 — 이후 재방문 시 stale 디자인이 남지 않도록
   useEffect(() => {
     if (aiDesign) clearAiDesign();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleShare = async () => {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) {
+      alert('공유 기능은 로그인 후 이용할 수 있습니다.');
+      return;
+    }
+    if (!data) return;
+
+    setShareState('loading');
+    setShareUrl(null); // 재시도 시 이전 URL 초기화
+    const result = await sharePortfolio({
+      title: `${data.name}의 포트폴리오`,
+      templateId: getSelectedTemplate() ?? 'minimal-dark',
+      data,
+    });
+
+    if (result.success && result.token) {
+      const url = `${window.location.origin}${window.location.pathname}#portfolio-public/${result.token}`;
+      setShareUrl(url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareState('copied');
+        setTimeout(() => setShareState('idle'), 2500);
+      } catch {
+        // 클립보드 실패 시 URL을 화면에 노출해 수동 복사 가능하게
+        setShareState('clipboard-error');
+      }
+    } else {
+      // API 실패 — shareUrl은 null 유지
+      setShareState('api-error');
+    }
+  };
 
   if (!data) {
     return (
@@ -438,33 +475,67 @@ export default function PortfolioResultPage() {
         position: 'sticky', top: 0, zIndex: 100,
         background: '#fff', borderBottom: '1px solid #e8e8e8',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', height: 52,
+        padding: '0 24px', height: 52, gap: 12,
       }}>
-        <Navbar />
-        <div style={{ display: 'flex', gap: 8, position: 'absolute', right: 24, alignItems: 'center' }}>
+        {/* 왼쪽: 로고 */}
+        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
+          <Logo size={28} />
+          <span style={{ fontWeight: 700, fontSize: 15, color: '#111', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>buildme</span>
+        </a>
+
+        {/* 오른쪽: 배지 + 버튼들 */}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {aiDesign && (
             <span style={{
               fontSize: 11, padding: '3px 10px', borderRadius: 20,
               background: `${aiDesign.primaryColor}22`, color: aiDesign.primaryColor,
-              border: `1px solid ${aiDesign.primaryColor}44`, letterSpacing: 1,
+              border: `1px solid ${aiDesign.primaryColor}44`, letterSpacing: 1, flexShrink: 0,
             }}>
               AI 디자인 적용됨
             </span>
           )}
           <button
             onClick={() => history.back()}
-            style={{ padding: '7px 16px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#666' }}
+            style={{ padding: '7px 16px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#666', flexShrink: 0 }}
           >
             ← 돌아가기
           </button>
           <button
-            disabled
-            style={{ padding: '7px 20px', border: 'none', borderRadius: 6, background: '#ccc', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'not-allowed' }}
-            aria-disabled="true"
+            onClick={handleShare}
+            disabled={shareState === 'loading'}
+            style={{
+              padding: '7px 20px', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600,
+              cursor: shareState === 'loading' ? 'wait' : 'pointer', flexShrink: 0,
+              background: shareState === 'copied' ? '#16a34a' : shareState === 'clipboard-error' ? '#b45309' : shareState === 'api-error' ? '#dc2626' : '#000',
+              color: '#fff', transition: 'background 0.2s',
+            }}
           >
-            공유하기 (준비 중)
+            {shareState === 'loading' ? '생성 중...' : shareState === 'copied' ? '✓ 링크 복사됨!' : shareState === 'clipboard-error' ? '링크 생성됨' : shareState === 'api-error' ? '오류 발생' : '공유하기'}
           </button>
         </div>
+
+        {/* 클립보드 실패 시 수동 복사용 URL 표시 */}
+        {shareState === 'clipboard-error' && shareUrl && (
+          <div style={{
+            position: 'absolute', top: 52, right: 24,
+            background: '#fff', border: '1px solid #e8e8e8', borderRadius: 8,
+            padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+            display: 'flex', alignItems: 'center', gap: 8, zIndex: 200,
+          }}>
+            <input
+              readOnly
+              value={shareUrl}
+              onFocus={(e) => e.target.select()}
+              style={{ border: 'none', outline: 'none', fontSize: 12, color: '#444', width: 280, background: 'transparent' }}
+            />
+            <button
+              onClick={() => navigator.clipboard.writeText(shareUrl).then(() => { setShareState('copied'); setShareUrl(null); setTimeout(() => setShareState('idle'), 2500); })}
+              style={{ padding: '4px 10px', background: '#000', color: '#fff', border: 'none', borderRadius: 4, fontSize: 11, cursor: 'pointer', flexShrink: 0 }}
+            >
+              복사
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 포트폴리오 본문: AI 디자인이 있으면 AiCustom, 없으면 선택된 템플릿 */}
