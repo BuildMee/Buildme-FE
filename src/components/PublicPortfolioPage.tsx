@@ -13,13 +13,20 @@ export default function PublicPortfolioPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
+    // 토큰 변경 시 즉시 loading 상태로 리셋 (stale UI 방지)
+    setState('loading');
+    setPortfolioData(null);
+
     if (!token) {
       setState('error');
       setErrorMsg('유효하지 않은 링크입니다.');
       return;
     }
 
+    let cancelled = false; // race condition 방지
+
     fetchPublicPortfolio(token).then((result) => {
+      if (cancelled) return; // 이전 요청 응답 무시
       if (result.success && result.data) {
         setPortfolioData(result.data);
         setTemplateId(result.templateId ?? 'minimal-dark');
@@ -30,6 +37,8 @@ export default function PublicPortfolioPage() {
         setState('error');
       }
     });
+
+    return () => { cancelled = true; }; // cleanup으로 이전 요청 무효화
   }, [token]);
 
   if (state === 'loading') {
