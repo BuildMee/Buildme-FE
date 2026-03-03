@@ -93,6 +93,30 @@ export async function fetchPublicPortfolio(token: string): Promise<{
   }
 }
 
+/** 이력서 PDF 업로드 + AI 분석 */
+export async function uploadResumeAndAnalyze(payload: {
+  file: File;
+  name: string;
+  role: string;
+}): Promise<{ success: boolean; portfolio?: PortfolioData; fallback?: boolean; message?: string }> {
+  try {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', payload.file);
+    formData.append('name', payload.name);
+    formData.append('role', payload.role);
+
+    const res = await fetch(`${API_BASE}/api/resume/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
 export interface SavedResume {
   id: string;
   fileName: string;

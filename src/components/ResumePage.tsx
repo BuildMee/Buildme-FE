@@ -3,10 +3,10 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
 import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData, clearAiDesign } from '../utils/templates';
-import { savePortfolioToServer } from '../utils/portfolioApi';
+import { savePortfolioToServer, uploadResumeAndAnalyze } from '../utils/portfolioApi';
 import { PREVIEWS } from './TemplatePreviews';
 
-type Step = 'upload' | 'info' | 'detail' | 'template' | 'done';
+type Step = 'upload' | 'info' | 'analyzing' | 'detail' | 'template' | 'done';
 
 export default function ResumePage() {
   const [step, setStep] = useState<Step>('upload');
@@ -42,6 +42,21 @@ export default function ResumePage() {
   const goToNextAfterDetail = () => {
     const preSelected = getSelectedTemplate();
     setStep(preSelected ? 'done' : 'template');
+  };
+
+  const handleAnalyze = async () => {
+    if (!file) return;
+    setStep('analyzing');
+    const result = await uploadResumeAndAnalyze({ file, name, role });
+    if (result.success && result.portfolio) {
+      const p = result.portfolio;
+      if (p.intro) setBio(p.intro);
+      if (p.skills?.length) setSkills(p.skills.join(', '));
+      if (p.github) setGithub(p.github);
+      if (p.blog) setBlog(p.blog);
+      if (p.summary) setHighlights(p.summary);
+    }
+    setStep('detail');
   };
 
   const STEP_LABELS = ['이력서 업로드', '기본 정보', '상세 정보', '템플릿 선택', '완성'];
@@ -162,11 +177,21 @@ export default function ResumePage() {
               <button
                 className={`${styles.nextBtn} ${!name || !role ? styles.nextBtnDisabled : ''}`}
                 disabled={!name || !role}
-                onClick={() => setStep('detail')}
+                onClick={handleAnalyze}
               >
-                다음 →
+                AI 분석 시작 →
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── Step analyzing: AI 분석 중 ── */}
+        {step === 'analyzing' && (
+          <div className={`${styles.card} ${styles.cardCenter}`}>
+            <div style={{ width: 48, height: 48, border: '3px solid #eee', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 24 }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <h2 className={styles.cardTitle}>AI가 이력서를 분석 중이에요</h2>
+            <p className={styles.cardDesc}>PDF 텍스트 추출 후 포트폴리오 초안을 생성하고 있어요.<br />잠시만 기다려주세요.</p>
           </div>
         )}
 
