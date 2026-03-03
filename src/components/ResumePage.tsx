@@ -48,7 +48,12 @@ export default function ResumePage() {
     if (!file) return;
     setStep('analyzing');
     const result = await uploadResumeAndAnalyze({ file, name, role });
-    if (result.success && result.portfolio) {
+    if (!result.success) {
+      alert(result.message ?? 'AI 분석에 실패했어요. 다시 시도해주세요.');
+      setStep('info');
+      return;
+    }
+    if (result.portfolio) {
       const p = result.portfolio;
       if (p.intro) setBio(p.intro);
       if (p.skills?.length) setSkills(p.skills.join(', '));
