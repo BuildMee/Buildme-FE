@@ -330,6 +330,24 @@
   color: var(--color-black);
 }
 
+.likeBtnActive {
+  color: #e74c3c;
+}
+
+.likeBtnActive:hover {
+  color: #c0392b;
+}
+
+@keyframes likePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.likePop {
+  animation: likePop 0.25s ease;
+}
+
 .useBtn {
   font-family: var(--font-mono);
   font-size: 10px;

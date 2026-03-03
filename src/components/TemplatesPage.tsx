@@ -167,11 +167,55 @@ const STAGGER: Record<number, string> = {
 
 /* ── Page ── */
 
+const LIKES_KEY = 'buildme_liked_templates';
+
+function loadLiked(): Set<string> {
+  try {
+    const raw = localStorage.getItem(LIKES_KEY);
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLiked(liked: Set<string>) {
+  localStorage.setItem(LIKES_KEY, JSON.stringify([...liked]));
+}
+
 export default function TemplatesPage() {
   const [activeFilter, setActiveFilter] = useState<Category>('all');
   const [sort, setSort] = useState<SortKey>('popular');
   const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
+  const [liked, setLiked] = useState<Set<string>>(loadLiked);
+  const [poppedId, setPoppedId] = useState<string | null>(null);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>(
+    () => Object.fromEntries(communityTemplates.map((t) => [t.id, t.likes]))
+  );
   const gridRef = useRef<HTMLDivElement | null>(null);
+
+  const handleLike = (id: string) => {
+    const isLoggedIn = !!sessionStorage.getItem('access_token');
+    if (!isLoggedIn) {
+      alert('좋아요는 로그인 후 이용할 수 있어요.');
+      return;
+    }
+    setLiked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      saveLiked(next);
+      return next;
+    });
+    setLikeCounts((prev) => ({
+      ...prev,
+      [id]: prev[id] + (liked.has(id) ? -1 : 1),
+    }));
+    setPoppedId(id);
+    setTimeout(() => setPoppedId(null), 250);
+  };
 
   const filtered = (
     activeFilter === 'all' ? communityTemplates : communityTemplates.filter((t) => t.category === activeFilter)
@@ -280,9 +324,12 @@ export default function TemplatesPage() {
                 <div className={styles.cardCategory}>{tpl.category}</div>
               </div>
               <div className={styles.cardActions}>
-                <button className={styles.likeBtn}>
-                  <HeartIcon />
-                  {tpl.likes >= 1000 ? `${(tpl.likes / 1000).toFixed(1)}k` : tpl.likes}
+                <button
+                  className={`${styles.likeBtn} ${liked.has(tpl.id) ? styles.likeBtnActive : ''} ${poppedId === tpl.id ? styles.likePop : ''}`}
+                  onClick={() => handleLike(tpl.id)}
+                >
+                  <HeartIcon filled={liked.has(tpl.id)} />
+                  {likeCounts[tpl.id] >= 1000 ? `${(likeCounts[tpl.id] / 1000).toFixed(1)}k` : likeCounts[tpl.id]}
                 </button>
                 <button className={styles.useBtn} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
               </div>
@@ -322,9 +369,9 @@ function PlusIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ filled }: { filled?: boolean }) {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
