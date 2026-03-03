@@ -86,7 +86,7 @@ export async function fetchPublicPortfolio(token: string): Promise<{
   message?: string;
 }> {
   try {
-    const res = await fetch(`${API_BASE}/api/portfolio/public/${token}`);
+    const res = await fetch(`${API_BASE}/api/portfolio/public/${encodeURIComponent(token)}`);
     return await res.json();
   } catch {
     return { success: false, message: '서버 연결에 실패했습니다.' };
