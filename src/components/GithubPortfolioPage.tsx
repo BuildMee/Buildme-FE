@@ -99,6 +99,11 @@ export default function GithubPortfolioPage() {
   const handleGenerate = async () => {
     if (!token || selectedRepos.size === 0) return;
     const resolvedRole = major === '기타' ? customMajor.trim() : major;
+    if (!resolvedRole) {
+      setError('직군을 입력해주세요.');
+      setStep('role');
+      return;
+    }
     setStep('generating');
     setError('');
     try {

@@ -1,18 +1,6 @@
 import Navbar from './Navbar';
 import { getPortfolioData, getSelectedTemplate, PortfolioData } from '../utils/templates';
 
-const DUMMY: PortfolioData = {
-  name: '홍길동',
-  role: '프론트엔드 개발자',
-  intro: '사용자 경험을 중시하는 프론트엔드 개발자입니다. React와 TypeScript를 주력으로 다양한 웹 서비스를 개발해왔습니다.',
-  skills: ['React', 'TypeScript', 'Node.js', 'Docker', 'AWS'],
-  projects: [
-    { name: 'E-commerce Platform', description: '대용량 트래픽을 처리하는 쇼핑몰 플랫폼. MSA 구조로 설계하여 안정적인 서비스를 구현했습니다.', tech: ['React', 'Node.js', 'PostgreSQL'], highlights: '월 100만 PV 처리, 결제 전환율 23% 향상' },
-    { name: 'Real-time Chat App', description: 'WebSocket 기반의 실시간 채팅 서비스. 1:1 및 그룹 채팅을 지원합니다.', tech: ['React', 'Socket.io', 'Redis'], highlights: '동시 접속 5,000명 처리, 메시지 지연 50ms 이하' },
-  ],
-  summary: '3년간의 프론트엔드 경험을 바탕으로 사용자 중심의 서비스를 개발하는 개발자',
-};
-
 /* ── 템플릿별 레이아웃 ── */
 
 function MinimalDark({ data }: { data: PortfolioData }) {
@@ -275,8 +263,22 @@ const TEMPLATE_MAP: Record<string, React.ComponentType<{ data: PortfolioData }>>
 
 export default function PortfolioResultPage() {
   const templateId = getSelectedTemplate() ?? 'minimal-dark';
-  const data = getPortfolioData() ?? DUMMY;
+  const data = getPortfolioData();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
+
+  if (!data) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <p style={{ fontSize: 16, color: '#888' }}>포트폴리오 데이터가 없습니다.</p>
+        <button
+          onClick={() => { window.location.hash = ''; }}
+          style={{ padding: '10px 24px', background: '#000', color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, cursor: 'pointer' }}
+        >
+          홈으로 돌아가기
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

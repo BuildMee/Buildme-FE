@@ -53,5 +53,14 @@ export function savePortfolioData(data: PortfolioData) {
 export function getPortfolioData(): PortfolioData | null {
   const raw = sessionStorage.getItem('portfolio_data');
   if (!raw) return null;
-  try { return JSON.parse(raw) as PortfolioData; } catch { return null; }
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed?.name !== 'string' ||
+      typeof parsed?.role !== 'string' ||
+      !Array.isArray(parsed?.skills) ||
+      !Array.isArray(parsed?.projects)
+    ) return null;
+    return parsed as PortfolioData;
+  } catch { return null; }
 }
