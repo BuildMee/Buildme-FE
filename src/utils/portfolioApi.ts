@@ -59,6 +59,40 @@ export async function fetchMyPortfolios(): Promise<{ success: boolean; portfolio
   }
 }
 
+/** 공유 링크 생성 */
+export async function sharePortfolio(payload: {
+  title: string;
+  templateId: string;
+  data: PortfolioData;
+}): Promise<{ success: boolean; token?: string; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/share`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
+/** 공개 포트폴리오 조회 (인증 불필요) */
+export async function fetchPublicPortfolio(token: string): Promise<{
+  success: boolean;
+  title?: string;
+  templateId?: string;
+  data?: PortfolioData;
+  message?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/public/${token}`);
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
 /** 포트폴리오 삭제 */
 export async function deletePortfolioFromServer(id: string): Promise<{ success: boolean; message?: string }> {
   try {

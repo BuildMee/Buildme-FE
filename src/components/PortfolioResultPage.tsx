@@ -1,7 +1,8 @@
-import { ComponentType, useEffect } from 'react';
+import { ComponentType, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import { getPortfolioData, getSelectedTemplate, getAiDesign, clearAiDesign } from '../utils/templates';
 import type { PortfolioData, AiDesign } from '../utils/templates';
+import { sharePortfolio } from '../utils/portfolioApi';
 
 /* ── 템플릿별 레이아웃 ── */
 
@@ -393,7 +394,7 @@ function AiCustom({ data, design }: { data: PortfolioData; design: AiDesign }) {
 }
 
 /* ── 템플릿 맵 ── */
-const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
+export const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
   'minimal-dark': MinimalDark,
   'clean-white':  CleanWhite,
   'blue-accent':  BlueAccent,
@@ -412,10 +413,43 @@ export default function PortfolioResultPage() {
   const aiDesign = getAiDesign();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
 
+  const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied' | 'error'>('idle');
+
   // ai_design을 한 번 소비한 뒤 정리 — 이후 재방문 시 stale 디자인이 남지 않도록
   useEffect(() => {
     if (aiDesign) clearAiDesign();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleShare = async () => {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) {
+      alert('공유 기능은 로그인 후 이용할 수 있습니다.');
+      return;
+    }
+    if (!data) return;
+
+    setShareState('loading');
+    const result = await sharePortfolio({
+      title: `${data.name}의 포트폴리오`,
+      templateId: getSelectedTemplate() ?? 'minimal-dark',
+      data,
+    });
+
+    if (result.success && result.token) {
+      const shareUrl = `${window.location.origin}${window.location.pathname}#portfolio-public/${result.token}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareState('copied');
+        setTimeout(() => setShareState('idle'), 2500);
+      } catch {
+        setShareState('error');
+        setTimeout(() => setShareState('idle'), 2500);
+      }
+    } else {
+      setShareState('error');
+      setTimeout(() => setShareState('idle'), 2500);
+    }
+  };
 
   if (!data) {
     return (
@@ -458,11 +492,15 @@ export default function PortfolioResultPage() {
             ← 돌아가기
           </button>
           <button
-            disabled
-            style={{ padding: '7px 20px', border: 'none', borderRadius: 6, background: '#ccc', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'not-allowed' }}
-            aria-disabled="true"
+            onClick={handleShare}
+            disabled={shareState === 'loading'}
+            style={{
+              padding: '7px 20px', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: shareState === 'loading' ? 'wait' : 'pointer',
+              background: shareState === 'copied' ? '#16a34a' : shareState === 'error' ? '#dc2626' : '#000',
+              color: '#fff', transition: 'background 0.2s',
+            }}
           >
-            공유하기 (준비 중)
+            {shareState === 'loading' ? '생성 중...' : shareState === 'copied' ? '✓ 링크 복사됨!' : shareState === 'error' ? '오류 발생' : '공유하기'}
           </button>
         </div>
       </div>
