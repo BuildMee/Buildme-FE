@@ -2,30 +2,14 @@ import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/MyPage.module.css';
-import { fetchMyPortfolios, deletePortfolioFromServer, type SavedPortfolio } from '../utils/portfolioApi';
-
-interface Resume {
-  id: string;
-  fileName: string;
-  uploadedAt: string;
-}
-
-interface Payment {
-  id: string;
-  item: string;
-  amount: string;
-  date: string;
-  status: '완료' | '취소';
-}
-
-const dummyResumes: Resume[] = [
-  { id: '1', fileName: '허영재_이력서_2026.pdf', uploadedAt: '2026.02.18' },
-];
-
-const dummyPayments: Payment[] = [
-  { id: '1', item: 'Pro 플랜 1개월', amount: '9,900원', date: '2026.02.01', status: '완료' },
-  { id: '2', item: 'Pro 플랜 1개월', amount: '9,900원', date: '2026.01.01', status: '완료' },
-];
+import {
+  fetchMyPortfolios,
+  deletePortfolioFromServer,
+  fetchMyResumes,
+  deleteResumeFromServer,
+  type SavedPortfolio,
+  type SavedResume,
+} from '../utils/portfolioApi';
 
 type Tab = 'portfolio' | 'resume' | 'payment';
 
@@ -33,7 +17,8 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState<Tab>('portfolio');
   const [portfolios, setPortfolios] = useState<SavedPortfolio[]>([]);
   const [portfoliosLoading, setPortfoliosLoading] = useState(true);
-  const [resumes, setResumes] = useState(dummyResumes);
+  const [resumes, setResumes] = useState<SavedResume[]>([]);
+  const [resumesLoading, setResumesLoading] = useState(true);
   const [userName, setUserName] = useState<string | null>(null);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
@@ -72,6 +57,14 @@ export default function MyPage() {
       })
       .catch(() => {})
       .finally(() => setPortfoliosLoading(false));
+
+    // 이력서 목록 로드
+    fetchMyResumes()
+      .then((result) => {
+        if (result.success && result.resumes) setResumes(result.resumes);
+      })
+      .catch(() => {})
+      .finally(() => setResumesLoading(false));
   }, []);
 
   const handleLogout = () => {
@@ -87,8 +80,18 @@ export default function MyPage() {
     }
   };
 
-  const deleteResume = (id: string) => {
-    setResumes((prev) => prev.filter((r) => r.id !== id));
+  const deleteResume = async (id: string) => {
+    const result = await deleteResumeFromServer(id);
+    if (result.success) {
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+    }
+  };
+
+  const previewPortfolio = (p: SavedPortfolio) => {
+    sessionStorage.setItem('portfolio_data', JSON.stringify(p.data));
+    sessionStorage.setItem('selected_template', p.templateId);
+    sessionStorage.removeItem('ai_design');
+    window.location.hash = '#portfolio-result';
   };
 
   return (
@@ -149,6 +152,7 @@ export default function MyPage() {
                       </div>
                     </div>
                     <div className={styles.itemActions}>
+                      <button className={styles.editBtn} onClick={() => previewPortfolio(p)}>미리보기</button>
                       <button className={styles.deleteBtn} onClick={() => deletePortfolio(p.id)}>삭제</button>
                     </div>
                   </div>
@@ -161,7 +165,11 @@ export default function MyPage() {
         {/* 이력서 탭 */}
         {activeTab === 'resume' && (
           <div className={styles.section}>
-            {resumes.length === 0 ? (
+            {resumesLoading ? (
+              <div className={styles.empty}>
+                <p className={styles.emptyText} style={{ color: '#bbb' }}>불러오는 중...</p>
+              </div>
+            ) : resumes.length === 0 ? (
               <div className={styles.empty}>
                 <p className={styles.emptyText}>업로드된 이력서가 없어요.</p>
                 <a href="#resume" className={styles.emptyBtn}>이력서 업로드 →</a>
@@ -174,7 +182,7 @@ export default function MyPage() {
                       <div className={styles.itemIcon}>📄</div>
                       <div>
                         <div className={styles.itemName}>{r.fileName}</div>
-                        <div className={styles.itemMeta}>업로드 · {r.uploadedAt}</div>
+                        <div className={styles.itemMeta}>업로드 · {new Date(r.uploadedAt).toLocaleDateString('ko-KR')}</div>
                       </div>
                     </div>
                     <div className={styles.itemActions}>
