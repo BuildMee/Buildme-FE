@@ -470,8 +470,11 @@ export default function PortfolioResultPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* 인쇄 시 툴바 숨김 */}
+      <style>{`@media print { #portfolio-toolbar { display: none !important; } }`}</style>
+
       {/* 상단 툴바 */}
-      <div style={{
+      <div id="portfolio-toolbar" style={{
         position: 'sticky', top: 0, zIndex: 100,
         background: '#fff', borderBottom: '1px solid #e8e8e8',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -499,6 +502,12 @@ export default function PortfolioResultPage() {
             style={{ padding: '7px 16px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#666', flexShrink: 0 }}
           >
             ← 돌아가기
+          </button>
+          <button
+            onClick={() => window.print()}
+            style={{ padding: '7px 16px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#333', flexShrink: 0, fontWeight: 500 }}
+          >
+            PDF 저장
           </button>
           <button
             onClick={handleShare}
