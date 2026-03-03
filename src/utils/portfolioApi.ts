@@ -93,6 +93,44 @@ export async function fetchPublicPortfolio(token: string): Promise<{
   }
 }
 
+/** 이력서 PDF 업로드 + AI 분석 */
+export async function uploadResumeAndAnalyze(payload: {
+  file: File;
+  name: string;
+  role: string;
+}): Promise<{ success: boolean; portfolio?: PortfolioData; fallback?: boolean; message?: string }> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
+  try {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', payload.file);
+    formData.append('name', payload.name);
+    formData.append('role', payload.role);
+
+    const res = await fetch(`${API_BASE}/api/resume/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({})) as { message?: string };
+      return { success: false, message: errBody.message ?? `서버 오류 (${res.status})` };
+    }
+
+    return await res.json();
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return { success: false, message: 'AI 분석 시간이 초과됐어요. 다시 시도해주세요.' };
+    }
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
 export interface SavedResume {
   id: string;
   fileName: string;
