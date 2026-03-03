@@ -129,6 +129,7 @@ export default function GithubPortfolioPage() {
       const data = await res.json() as { success: boolean; portfolio?: GeneratedPortfolio; message?: string; fallback?: boolean };
 
       if (data.success && data.portfolio) {
+        setPortfolio(data.portfolio);
         const portfolioData = { name: userName, role: resolvedRole, ...data.portfolio };
         savePortfolioData(portfolioData);
         if (data.fallback) setError('⚠️ AI API 한도 초과 — 레포 정보 기반으로 자동 생성된 초안입니다.');

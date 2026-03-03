@@ -60,7 +60,8 @@ export async function deletePortfolioFromServer(id: string): Promise<{ success: 
       method: 'DELETE',
       headers: authHeaders(),
     });
-    return res.json();
+    if (res.status === 204) return { success: true };
+    return await res.json();
   } catch {
     return { success: false, message: '서버 연결에 실패했습니다.' };
   }
