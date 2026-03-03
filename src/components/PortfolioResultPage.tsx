@@ -1,3 +1,4 @@
+import { ComponentType } from 'react';
 import Navbar from './Navbar';
 import { getPortfolioData, getSelectedTemplate, PortfolioData } from '../utils/templates';
 
@@ -248,7 +249,7 @@ function NeonDark({ data }: { data: PortfolioData }) {
 }
 
 /* ── 템플릿 맵 ── */
-const TEMPLATE_MAP: Record<string, React.ComponentType<{ data: PortfolioData }>> = {
+const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
   'minimal-dark': MinimalDark,
   'clean-white':  CleanWhite,
   'blue-accent':  BlueAccent,
