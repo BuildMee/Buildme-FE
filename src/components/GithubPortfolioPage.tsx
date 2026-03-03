@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { savePortfolioData, getSelectedTemplate, clearAiDesign } from '../utils/templates';
+import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
 
 type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
@@ -447,11 +447,11 @@ export default function GithubPortfolioPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button className={styles.cancelBtn} style={{ color: '#fff', borderColor: '#444' }}
-                    onClick={() => { setStep('select'); setPortfolio(null); setSelectedRepos(new Set()); setRepoDetails({}); setMajor(''); }}>
+                    onClick={() => { setStep('select'); setPortfolio(null); setSelectedRepos(new Set()); setRepoDetails({}); setMajor(''); setCustomMajor(''); setExtraInfo({ awards: '', certifications: '', activities: '', additional: '' }); setError(''); }}>
                     다시 선택하기
                   </button>
                   <button className={styles.nextBtn} style={{ background: '#fff', color: '#000' }}
-                    onClick={() => { clearAiDesign(); window.location.hash = 'portfolio-result'; }}>
+                    onClick={() => { window.location.hash = 'portfolio-result'; }}>
                     포트폴리오 확인하기 →
                   </button>
                 </div>

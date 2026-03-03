@@ -1,6 +1,6 @@
-import { ComponentType } from 'react';
+import { ComponentType, useEffect } from 'react';
 import Navbar from './Navbar';
-import { getPortfolioData, getSelectedTemplate, getAiDesign } from '../utils/templates';
+import { getPortfolioData, getSelectedTemplate, getAiDesign, clearAiDesign } from '../utils/templates';
 import type { PortfolioData, AiDesign } from '../utils/templates';
 
 /* ── 템플릿별 레이아웃 ── */
@@ -411,6 +411,11 @@ export default function PortfolioResultPage() {
   const data = getPortfolioData();
   const aiDesign = getAiDesign();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
+
+  // ai_design을 한 번 소비한 뒤 정리 — 이후 재방문 시 stale 디자인이 남지 않도록
+  useEffect(() => {
+    if (aiDesign) clearAiDesign();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!data) {
     return (
