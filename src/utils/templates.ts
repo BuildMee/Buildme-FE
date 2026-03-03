@@ -29,3 +29,29 @@ export function getSelectedTemplate(): string | null {
 export function clearSelectedTemplate() {
   sessionStorage.removeItem('selected_template');
 }
+
+export interface PortfolioData {
+  name: string;
+  role: string;
+  intro: string;
+  skills: string[];
+  projects: {
+    name: string;
+    description: string;
+    tech: string[];
+    highlights: string;
+  }[];
+  summary: string;
+  github?: string;
+  blog?: string;
+}
+
+export function savePortfolioData(data: PortfolioData) {
+  sessionStorage.setItem('portfolio_data', JSON.stringify(data));
+}
+
+export function getPortfolioData(): PortfolioData | null {
+  const raw = sessionStorage.getItem('portfolio_data');
+  if (!raw) return null;
+  try { return JSON.parse(raw) as PortfolioData; } catch { return null; }
+}

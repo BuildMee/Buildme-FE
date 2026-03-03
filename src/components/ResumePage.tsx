@@ -321,7 +321,7 @@ export default function ResumePage() {
               포트폴리오 초안이 준비됐어요.
             </p>
             <div className={styles.doneActions}>
-              <button className={styles.nextBtn}>포트폴리오 확인하기 →</button>
+              <button className={styles.nextBtn} onClick={() => { window.location.hash = 'portfolio-result'; }}>포트폴리오 확인하기 →</button>
             </div>
           </div>
         )}
