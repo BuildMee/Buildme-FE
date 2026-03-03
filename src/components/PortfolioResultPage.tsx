@@ -1,6 +1,7 @@
-import { ComponentType } from 'react';
+import { ComponentType, useEffect } from 'react';
 import Navbar from './Navbar';
-import { getPortfolioData, getSelectedTemplate, PortfolioData } from '../utils/templates';
+import { getPortfolioData, getSelectedTemplate, getAiDesign, clearAiDesign } from '../utils/templates';
+import type { PortfolioData, AiDesign } from '../utils/templates';
 
 /* ── 템플릿별 레이아웃 ── */
 
@@ -248,6 +249,149 @@ function NeonDark({ data }: { data: PortfolioData }) {
   );
 }
 
+/* ── AI 커스텀 템플릿 ── */
+function AiCustom({ data, design }: { data: PortfolioData; design: AiDesign }) {
+  const ff = design.fontStyle === 'monospace' ? 'monospace'
+    : design.fontStyle === 'serif' ? 'Georgia, serif'
+    : '-apple-system, BlinkMacSystemFont, sans-serif';
+  const radius = design.layout === 'minimal' ? 0 : design.layout === 'grid' ? 4 : 12;
+
+  if (design.layout === 'terminal') {
+    return (
+      <div style={{ background: design.backgroundColor, color: design.textColor, minHeight: '100vh', fontFamily: 'monospace' }}>
+        <div style={{ background: `${design.primaryColor}22`, padding: '10px 20px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: `1px solid ${design.primaryColor}44` }}>
+          {['#ff5f57','#febc2e','#28c840'].map(c => <span key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c, display: 'inline-block' }} />)}
+          <span style={{ marginLeft: 12, fontSize: 12, color: design.accentColor }}>portfolio.sh — {data.name}</span>
+        </div>
+        <div style={{ maxWidth: 860, margin: '0 auto', padding: '48px 40px' }}>
+          <p style={{ color: design.accentColor, fontSize: 13, marginBottom: 8 }}># {data.name}'s Portfolio</p>
+          <p style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: design.primaryColor }}>$ </span>whoami</p>
+          <p style={{ fontSize: 13, paddingLeft: 16, marginBottom: 6, opacity: 0.8 }}>{data.name} — {data.role}</p>
+          <p style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: design.primaryColor }}>$ </span>cat about.txt</p>
+          <p style={{ fontSize: 13, paddingLeft: 16, lineHeight: 1.8, marginBottom: 6, opacity: 0.7 }}>{data.intro}</p>
+          <p style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: design.primaryColor }}>$ </span>cat skills.txt</p>
+          <p style={{ color: design.accentColor, fontSize: 13, paddingLeft: 16, marginBottom: 6 }}>{data.skills.join('  ')}</p>
+          <p style={{ fontSize: 13, marginBottom: 16 }}><span style={{ color: design.primaryColor }}>$ </span>ls projects/</p>
+          {data.projects.map((p, i) => (
+            <div key={p.name} style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 13, marginBottom: 8 }}><span style={{ color: design.primaryColor }}>$ </span>cat projects/0{i+1}-{p.name}.md</p>
+              <div style={{ background: `${design.primaryColor}11`, border: `1px solid ${design.primaryColor}33`, borderRadius: 6, padding: '20px 24px' }}>
+                <p style={{ color: design.accentColor, fontSize: 14, fontWeight: 700, marginBottom: 8 }}># {p.name}</p>
+                <p style={{ fontSize: 13, lineHeight: 1.7, marginBottom: 10, opacity: 0.8 }}>{p.description}</p>
+                <p style={{ fontSize: 12, opacity: 0.5 }}>Tech: {p.tech.join(', ')}</p>
+                <p style={{ color: design.primaryColor, fontSize: 12, marginTop: 4 }}>→ {p.highlights}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (design.layout === 'magazine') {
+    return (
+      <div style={{ background: design.backgroundColor, color: design.textColor, minHeight: '100vh', fontFamily: ff }}>
+        <section style={{ minHeight: '55vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '80px 60px', borderBottom: `3px solid ${design.primaryColor}` }}>
+          <p style={{ fontSize: 11, letterSpacing: 5, color: design.accentColor, marginBottom: 14 }}>ISSUE 01 · {new Date().getFullYear()} · PORTFOLIO</p>
+          <h1 style={{ fontSize: 88, fontWeight: 900, lineHeight: 0.9, color: design.primaryColor, marginBottom: 20 }}>{data.name.toUpperCase()}</h1>
+          <p style={{ fontSize: 13, letterSpacing: 4, opacity: 0.6 }}>{data.role.toUpperCase()}</p>
+        </section>
+        <section style={{ maxWidth: 820, margin: '0 auto', padding: '60px 40px' }}>
+          <p style={{ fontSize: 18, lineHeight: 2, fontStyle: 'italic', borderLeft: `3px solid ${design.accentColor}`, paddingLeft: 24, marginBottom: 48, opacity: 0.8 }}>{data.intro}</p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 60 }}>
+            {data.skills.map(s => <span key={s} style={{ background: design.primaryColor, color: design.backgroundColor, padding: '6px 16px', fontSize: 12, letterSpacing: 1, borderRadius: radius }}>{s}</span>)}
+          </div>
+          {data.projects.map((p, i) => (
+            <div key={p.name} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 24, marginBottom: 48, paddingBottom: 48, borderBottom: `1px solid ${design.primaryColor}33` }}>
+              <div style={{ fontSize: 48, fontWeight: 900, color: design.accentColor, lineHeight: 1, opacity: 0.4 }}>0{i+1}</div>
+              <div>
+                <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10, color: design.primaryColor }}>{p.name}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.8, marginBottom: 12, opacity: 0.75 }}>{p.description}</p>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                  {p.tech.map(t => <span key={t} style={{ fontSize: 11, border: `1px solid ${design.accentColor}`, padding: '2px 8px', color: design.accentColor, borderRadius: radius }}>{t}</span>)}
+                </div>
+                <p style={{ fontSize: 13, fontStyle: 'italic', opacity: 0.5 }}>{p.highlights}</p>
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+    );
+  }
+
+  if (design.layout === 'grid') {
+    return (
+      <div style={{ background: design.backgroundColor, color: design.textColor, minHeight: '100vh', fontFamily: ff }}>
+        <section style={{ maxWidth: 960, margin: '0 auto', padding: '80px 40px 60px' }}>
+          <p style={{ fontSize: 10, letterSpacing: 4, color: design.accentColor, marginBottom: 16 }}>PORTFOLIO</p>
+          <h1 style={{ fontSize: 58, fontWeight: 900, lineHeight: 1, marginBottom: 10, color: design.primaryColor }}>{data.name}</h1>
+          <p style={{ fontSize: 12, letterSpacing: 3, opacity: 0.5, marginBottom: 24 }}>{data.role.toUpperCase()}</p>
+          <p style={{ fontSize: 15, lineHeight: 1.9, opacity: 0.75, maxWidth: 600 }}>{data.intro}</p>
+        </section>
+        <section style={{ maxWidth: 960, margin: '0 auto', padding: '0 40px 60px' }}>
+          <p style={{ fontSize: 10, letterSpacing: 3, color: design.accentColor, marginBottom: 16 }}>SKILLS</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {data.skills.map(s => <span key={s} style={{ border: `1px solid ${design.accentColor}`, padding: '5px 14px', fontSize: 12, color: design.accentColor, borderRadius: radius }}>{s}</span>)}
+          </div>
+        </section>
+        <section style={{ maxWidth: 960, margin: '0 auto', padding: '0 40px 80px' }}>
+          <p style={{ fontSize: 10, letterSpacing: 3, color: design.accentColor, marginBottom: 24 }}>PROJECTS</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {data.projects.map((p, i) => (
+              <div key={p.name} style={{ border: `1px solid ${design.primaryColor}33`, borderTop: `3px solid ${design.accentColor}`, padding: '24px 22px', borderRadius: radius, background: `${design.primaryColor}08` }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: design.accentColor, opacity: 0.3, marginBottom: 8 }}>0{i+1}</div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 10, color: design.primaryColor }}>{p.name}</h3>
+                <p style={{ fontSize: 13, lineHeight: 1.7, marginBottom: 12, opacity: 0.7 }}>{p.description}</p>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+                  {p.tech.map(t => <span key={t} style={{ fontSize: 11, background: `${design.accentColor}22`, color: design.accentColor, padding: '2px 8px', borderRadius: 4 }}>{t}</span>)}
+                </div>
+                <p style={{ fontSize: 12, opacity: 0.5, fontStyle: 'italic' }}>{p.highlights}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // minimal (default)
+  return (
+    <div style={{ background: design.backgroundColor, color: design.textColor, minHeight: '100vh', fontFamily: ff }}>
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '100px 40px 80px' }}>
+        <div style={{ fontSize: 10, letterSpacing: 4, color: design.accentColor, marginBottom: 20 }}>PORTFOLIO · {new Date().getFullYear()}</div>
+        <h1 style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 20, color: design.primaryColor }}>{data.name}</h1>
+        <p style={{ fontSize: 13, letterSpacing: 3, opacity: 0.5, marginBottom: 32 }}>{data.role.toUpperCase()}</p>
+        <p style={{ fontSize: 15, lineHeight: 1.9, opacity: 0.75, maxWidth: 560 }}>{data.intro}</p>
+      </section>
+      <div style={{ borderTop: `1px solid ${design.primaryColor}22` }} />
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '60px 40px' }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: design.accentColor, marginBottom: 20 }}>SKILLS</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {data.skills.map(s => <span key={s} style={{ border: `1px solid ${design.accentColor}`, padding: '6px 16px', fontSize: 12, color: design.accentColor, borderRadius: radius }}>{s}</span>)}
+        </div>
+      </section>
+      <div style={{ borderTop: `1px solid ${design.primaryColor}22` }} />
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '60px 40px' }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: design.accentColor, marginBottom: 32 }}>PROJECTS</div>
+        {data.projects.map((p, i) => (
+          <div key={p.name} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: `1px solid ${design.primaryColor}15` }}>
+            <div style={{ fontSize: 11, color: design.accentColor, opacity: 0.5, marginBottom: 8 }}>0{i+1}</div>
+            <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12, color: design.primaryColor }}>{p.name}</h3>
+            <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.7, marginBottom: 16 }}>{p.description}</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {p.tech.map(t => <span key={t} style={{ fontSize: 11, border: `1px solid ${design.primaryColor}44`, padding: '3px 10px', opacity: 0.7, borderRadius: radius }}>{t}</span>)}
+            </div>
+            <p style={{ fontSize: 12, color: design.accentColor, fontStyle: 'italic' }}>{p.highlights}</p>
+          </div>
+        ))}
+      </section>
+      <div style={{ borderTop: `1px solid ${design.primaryColor}22`, padding: '40px', textAlign: 'center' }}>
+        <p style={{ fontSize: 12, opacity: 0.3 }}>{data.summary}</p>
+      </div>
+    </div>
+  );
+}
+
 /* ── 템플릿 맵 ── */
 const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
   'minimal-dark': MinimalDark,
@@ -265,7 +409,13 @@ const TEMPLATE_MAP: Record<string, ComponentType<{ data: PortfolioData }>> = {
 export default function PortfolioResultPage() {
   const templateId = getSelectedTemplate() ?? 'minimal-dark';
   const data = getPortfolioData();
+  const aiDesign = getAiDesign();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
+
+  // ai_design을 한 번 소비한 뒤 정리 — 이후 재방문 시 stale 디자인이 남지 않도록
+  useEffect(() => {
+    if (aiDesign) clearAiDesign();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!data) {
     return (
@@ -291,7 +441,16 @@ export default function PortfolioResultPage() {
         padding: '0 24px', height: 52,
       }}>
         <Navbar />
-        <div style={{ display: 'flex', gap: 8, position: 'absolute', right: 24 }}>
+        <div style={{ display: 'flex', gap: 8, position: 'absolute', right: 24, alignItems: 'center' }}>
+          {aiDesign && (
+            <span style={{
+              fontSize: 11, padding: '3px 10px', borderRadius: 20,
+              background: `${aiDesign.primaryColor}22`, color: aiDesign.primaryColor,
+              border: `1px solid ${aiDesign.primaryColor}44`, letterSpacing: 1,
+            }}>
+              AI 디자인 적용됨
+            </span>
+          )}
           <button
             onClick={() => history.back()}
             style={{ padding: '7px 16px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#666' }}
@@ -308,9 +467,12 @@ export default function PortfolioResultPage() {
         </div>
       </div>
 
-      {/* 포트폴리오 본문 */}
+      {/* 포트폴리오 본문: AI 디자인이 있으면 AiCustom, 없으면 선택된 템플릿 */}
       <div style={{ flex: 1 }}>
-        <TemplateComponent data={data} />
+        {aiDesign
+          ? <AiCustom data={data} design={aiDesign} />
+          : <TemplateComponent data={data} />
+        }
       </div>
     </div>
   );

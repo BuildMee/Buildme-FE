@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData } from '../utils/templates';
+import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData, clearAiDesign } from '../utils/templates';
+import { savePortfolioToServer } from '../utils/portfolioApi';
 import { PREVIEWS } from './TemplatePreviews';
 
 type Step = 'upload' | 'info' | 'detail' | 'template' | 'done';
@@ -324,7 +325,7 @@ export default function ResumePage() {
               <button
                 className={styles.nextBtn}
                 onClick={() => {
-                  savePortfolioData({
+                  const portfolioData = {
                     name,
                     role,
                     intro: bio,
@@ -333,7 +334,19 @@ export default function ResumePage() {
                     summary: highlights,
                     github: github || undefined,
                     blog: blog || undefined,
-                  });
+                  };
+                  savePortfolioData(portfolioData);
+
+                  const token = sessionStorage.getItem('access_token');
+                  if (token) {
+                    savePortfolioToServer({
+                      title: `${name || '내'}의 포트폴리오`,
+                      templateId: selectedTemplate || 'minimal-dark',
+                      data: portfolioData,
+                    }).catch(() => {});
+                  }
+
+                  clearAiDesign();
                   window.location.hash = 'portfolio-result';
                 }}
               >
