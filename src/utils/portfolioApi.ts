@@ -163,6 +163,32 @@ export async function deleteResumeFromServer(id: string): Promise<{ success: boo
   }
 }
 
+/** 템플릿 제출 */
+export async function submitTemplate(payload: {
+  name: string;
+  category: string;
+  description: string;
+  previewUrl: string;
+  githubUrl: string;
+  author: string;
+  tags: string;
+}): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/templates/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { message?: string };
+      return { success: false, message: err.message ?? `서버 오류 (${res.status})` };
+    }
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
 /** 포트폴리오 삭제 */
 export async function deletePortfolioFromServer(id: string): Promise<{ success: boolean; message?: string }> {
   try {
