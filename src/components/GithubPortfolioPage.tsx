@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
-import { savePortfolioData } from '../utils/templates';
+import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
+import { savePortfolioToServer } from '../utils/portfolioApi';
 
-type Step = 'select' | 'role' | 'detail' | 'generating' | 'done';
+type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
 
 interface Repo {
   id: number;
@@ -36,8 +37,8 @@ interface GeneratedPortfolio {
   summary: string;
 }
 
-const STEPS = ['레포 선택', '직군 선택', '프로젝트 상세', 'AI 분석', '포트폴리오 완성'];
-const STEP_KEYS: Step[] = ['select', 'role', 'detail', 'generating', 'done'];
+const STEPS = ['레포 선택', '직군 선택', '프로젝트 상세', '추가 정보', 'AI 분석', '포트폴리오 완성'];
+const STEP_KEYS: Step[] = ['select', 'role', 'detail', 'extra', 'generating', 'done'];
 
 const ROLES = [
   '프론트엔드', '백엔드', '풀스택', 'iOS', 'Android',
@@ -56,6 +57,7 @@ export default function GithubPortfolioPage() {
   const [major, setMajor] = useState('');
   const [customMajor, setCustomMajor] = useState('');
   const [repoDetails, setRepoDetails] = useState<Record<string, RepoDetail>>({});
+  const [extraInfo, setExtraInfo] = useState({ awards: '', certifications: '', activities: '', additional: '' });
 
   const [portfolio, setPortfolio] = useState<GeneratedPortfolio | null>(null);
   const [error, setError] = useState('');
@@ -122,13 +124,24 @@ export default function GithubPortfolioPage() {
       const res = await fetch(`${apiBase}/api/ai/generate-portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName, major: resolvedRole, repos: details.filter(Boolean) }),
+        body: JSON.stringify({ userName, major: resolvedRole, repos: details.filter(Boolean), extraInfo }),
       });
-      const data = await res.json() as { success: boolean; portfolio?: GeneratedPortfolio; message?: string };
+      const data = await res.json() as { success: boolean; portfolio?: GeneratedPortfolio; message?: string; fallback?: boolean };
 
       if (data.success && data.portfolio) {
-        setPortfolio(data.portfolio);
-        savePortfolioData({ name: userName, role: resolvedRole, ...data.portfolio });
+        const portfolioData = { name: userName, role: resolvedRole, ...data.portfolio };
+        savePortfolioData(portfolioData);
+        if (data.fallback) setError('⚠️ AI API 한도 초과 — 레포 정보 기반으로 자동 생성된 초안입니다.');
+
+        // 로그인 상태일 때 서버에 저장
+        if (token) {
+          savePortfolioToServer({
+            title: `${userName || '내'}의 포트폴리오`,
+            templateId: getSelectedTemplate() ?? 'minimal-dark',
+            data: portfolioData,
+          }).catch(() => { /* 저장 실패 시 무시 (로컬 데이터는 유지) */ });
+        }
+
         setStep('done');
       } else {
         setError(data.message ?? '생성에 실패했습니다.');
@@ -148,9 +161,8 @@ export default function GithubPortfolioPage() {
 
       <section className={styles.header}>
         <div className={styles.headerInner}>
-          <p className={styles.headerLabel}>GITHUB PORTFOLIO</p>
-          <h1 className={styles.headerTitle} style={{ fontFamily: 'var(--font-heading)', fontWeight: 800 }}>
-            GitHub으로<br />시작하기
+          <h1 className={styles.headerTitle}>
+            GitHub으로 시작하기
           </h1>
           <p className={styles.headerSub}>
             레포지토리를 선택하면 AI가 분석해서 포트폴리오 초안을 완성합니다.
@@ -170,7 +182,7 @@ export default function GithubPortfolioPage() {
         </div>
       </section>
 
-      <div className={styles.body}>
+      <div style={{ width: '100%', padding: '48px 60px 100px', boxSizing: 'border-box' }}>
 
         {/* ── Step 1: 레포 선택 ── */}
         {step === 'select' && (
@@ -337,74 +349,161 @@ export default function GithubPortfolioPage() {
 
             <div className={styles.actions}>
               <button className={styles.cancelBtn} onClick={() => setStep('role')}>← 이전</button>
-              <button className={styles.nextBtn} onClick={handleGenerate}>
-                AI 분석 시작 →
+              <button className={styles.nextBtn} onClick={() => setStep('extra')}>
+                다음 →
               </button>
             </div>
           </div>
         )}
 
-        {/* ── Step 4: 분석 중 ── */}
+        {/* ── Step 4: 추가 정보 ── */}
+        {step === 'extra' && (
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}>추가 정보 입력</h2>
+            <p className={styles.cardDesc}>
+              포트폴리오에 포함할 추가 정보를 입력해주세요.
+              <span style={{ marginLeft: 8, fontSize: 12, color: '#aaa' }}>선택사항</span>
+            </p>
+
+            <div className={styles.fields}>
+              {[
+                { key: 'awards', label: '수상 내역', placeholder: '예: 2024 해커톤 대상, 교내 알고리즘 경진대회 1위' },
+                { key: 'certifications', label: '자격증 / 수료', placeholder: '예: 정보처리기사, AWS Solutions Architect, Coursera ML 수료' },
+                { key: 'activities', label: '대외 활동 / 기여', placeholder: '예: 오픈소스 기여 (React 이슈 해결), 개발 동아리 운영, 기술 블로그 운영' },
+                { key: 'additional', label: '강조하고 싶은 점', placeholder: '이력서나 레포에 담기 어려운 경험, 특기사항, 목표 등 자유롭게 작성하세요.' },
+              ].map(({ key, label, placeholder }) => (
+                <div key={key} className={styles.field}>
+                  <label className={styles.label}>{label}</label>
+                  <textarea
+                    className={styles.input}
+                    value={extraInfo[key as keyof typeof extraInfo]}
+                    onChange={(e) => setExtraInfo(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    rows={3}
+                    style={{ resize: 'vertical', minHeight: 72 }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className={styles.actions}>
+              <button className={styles.cancelBtn} onClick={() => setStep('detail')}>← 이전</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className={styles.cancelBtn} onClick={handleGenerate}>건너뛰기</button>
+                <button className={styles.nextBtn} onClick={handleGenerate}>
+                  AI 분석 시작 →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 5: 분석 중 ── */}
         {step === 'generating' && (
           <div className={`${styles.card} ${styles.cardCenter}`}>
-            <div style={{ fontSize: 48, marginBottom: 24 }}>⚙️</div>
-            <h2 className={styles.doneTitle}>AI 분석 중...</h2>
-            <p className={styles.doneDesc}>
-              선택한 레포지토리를 분석하고 있습니다.<br />
-              잠시만 기다려주세요.
+            <style>{`
+              @keyframes _spin { to { transform: rotate(360deg); } }
+              @keyframes _pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+              @keyframes _bar { 0% { width: 0%; } 100% { width: 100%; } }
+            `}</style>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              border: '4px solid #ebebeb', borderTopColor: '#000',
+              animation: '_spin 0.85s linear infinite',
+              marginBottom: 28,
+            }} />
+            <h2 style={{ fontSize: 19, fontWeight: 700, marginBottom: 14, letterSpacing: -0.3 }}>AI 분석 중</h2>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  width: 7, height: 7, borderRadius: '50%', background: '#000',
+                  animation: `_pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+                }} />
+              ))}
+            </div>
+            <div style={{ width: 220, height: 3, background: '#ebebeb', borderRadius: 4, overflow: 'hidden', marginBottom: 18 }}>
+              <div style={{
+                height: '100%', background: '#000', borderRadius: 4,
+                animation: '_bar 2.5s ease-in-out infinite',
+              }} />
+            </div>
+            <p style={{ fontSize: 13, color: '#bbb', letterSpacing: 0.3 }}>
+              레포지토리를 분석하고 포트폴리오를 작성 중입니다
             </p>
           </div>
         )}
 
-        {/* ── Step 4: 완료 ── */}
+        {/* ── Step 5: 완료 ── */}
         {step === 'done' && portfolio && (
-          <div className={styles.card}>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div className={styles.doneIcon}>✓</div>
-              <h2 className={styles.doneTitle}>포트폴리오 초안 완성!</h2>
-              <p className={styles.doneDesc}>AI가 레포지토리를 분석해 초안을 작성했습니다.</p>
+          <div style={{ width: '100%' }}>
+            {/* 상단 완성 배너 */}
+            <div style={{ background: '#000', color: '#fff', padding: '48px 60px', marginBottom: 40 }}>
+              <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
+                <div>
+                  <p style={{ fontSize: 11, letterSpacing: 3, color: '#666', marginBottom: 10 }}>AI ANALYSIS COMPLETE</p>
+                  <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>포트폴리오 초안 완성!</h2>
+                  <p style={{ fontSize: 14, color: '#888' }}>AI가 레포지토리를 분석해 초안을 작성했습니다.</p>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button className={styles.cancelBtn} style={{ color: '#fff', borderColor: '#444' }}
+                    onClick={() => { setStep('select'); setPortfolio(null); setSelectedRepos(new Set()); setRepoDetails({}); setMajor(''); }}>
+                    다시 선택하기
+                  </button>
+                  <button className={styles.nextBtn} style={{ background: '#fff', color: '#000' }}
+                    onClick={() => { window.location.hash = 'portfolio-result'; }}>
+                    포트폴리오 확인하기 →
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div style={{ background: '#f8f8f8', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, letterSpacing: 2, color: '#888', marginBottom: 8 }}>자기소개</p>
-                <p style={{ lineHeight: 1.8, fontSize: 15 }}>{portfolio.intro}</p>
+            {/* 본문 3단 그리드 */}
+            <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+
+              {/* 자기소개 */}
+              <div style={{ gridColumn: '1 / -1', background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 12 }}>INTRO</p>
+                <p style={{ fontSize: 15, lineHeight: 1.9, color: '#333' }}>{portfolio.intro}</p>
               </div>
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, letterSpacing: 2, color: '#888', marginBottom: 12 }}>기술스택</p>
+
+              {/* 기술스택 */}
+              <div style={{ background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>SKILLS</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {portfolio.skills.map((s) => (
-                    <span key={s} style={{ padding: '5px 14px', background: '#000', color: '#fff', borderRadius: 20, fontSize: 13 }}>{s}</span>
+                    <span key={s} style={{ padding: '6px 16px', background: '#000', color: '#fff', borderRadius: 20, fontSize: 13 }}>{s}</span>
                   ))}
                 </div>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 11, letterSpacing: 2, color: '#888', marginBottom: 12 }}>프로젝트</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {portfolio.projects.map((p) => (
-                    <div key={p.name} style={{ background: '#fff', borderRadius: 10, padding: 18, border: '1px solid #eee' }}>
-                      <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{p.name}</div>
-                      <p style={{ fontSize: 14, color: '#444', lineHeight: 1.7, marginBottom: 10 }}>{p.description}</p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                        {p.tech.map((t) => (
-                          <span key={t} style={{ padding: '3px 10px', background: '#f0f0f0', borderRadius: 4, fontSize: 12 }}>{t}</span>
-                        ))}
+
+              {/* 요약 */}
+              <div style={{ background: '#000', color: '#fff', borderRadius: 14, padding: '28px 32px' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#555', marginBottom: 12 }}>SUMMARY</p>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: '#ccc' }}>{portfolio.summary}</p>
+              </div>
+
+              {/* 프로젝트 */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>PROJECTS</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {portfolio.projects.map((p, i) => (
+                    <div key={p.name} style={{ background: '#f8f8f8', borderRadius: 14, padding: '24px 28px', display: 'grid', gridTemplateColumns: '40px 1fr', gap: 20, alignItems: 'start' }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: '#e8e8e8', lineHeight: 1 }}>0{i + 1}</div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 8 }}>{p.name}</div>
+                        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, marginBottom: 12 }}>{p.description}</p>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                          {p.tech.map((t) => (
+                            <span key={t} style={{ padding: '3px 12px', background: '#fff', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, color: '#555' }}>{t}</span>
+                          ))}
+                        </div>
+                        <p style={{ fontSize: 13, color: '#999', fontStyle: 'italic' }}>{p.highlights}</p>
                       </div>
-                      <p style={{ fontSize: 13, color: '#666', fontStyle: 'italic' }}>{p.highlights}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div style={{ background: '#000', color: '#fff', borderRadius: 10, padding: 16 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.6 }}>{portfolio.summary}</p>
-              </div>
-            </div>
 
-            <div className={styles.doneActions}>
-              <button className={styles.nextBtn} onClick={() => { window.location.hash = 'portfolio-result'; }}>포트폴리오 확인하기 →</button>
-              <button className={styles.cancelBtn} onClick={() => { setStep('select'); setPortfolio(null); setSelectedRepos(new Set()); setRepoDetails({}); setMajor(''); }}>
-                다시 선택하기
-              </button>
             </div>
           </div>
         )}

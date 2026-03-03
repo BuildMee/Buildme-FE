@@ -75,6 +75,31 @@ function isPortfolioData(value: unknown): value is PortfolioData {
     && (v.blog === undefined || typeof v.blog === 'string');
 }
 
+export interface AiDesign {
+  theme: string;
+  primaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  fontStyle: string;
+  layout: string;
+  mood: string;
+}
+
+export function saveAiDesign(design: AiDesign) {
+  sessionStorage.setItem('ai_design', JSON.stringify(design));
+}
+
+export function getAiDesign(): AiDesign | null {
+  const raw = sessionStorage.getItem('ai_design');
+  if (!raw) return null;
+  try { return JSON.parse(raw) as AiDesign; } catch { return null; }
+}
+
+export function clearAiDesign() {
+  sessionStorage.removeItem('ai_design');
+}
+
 export function getPortfolioData(): PortfolioData | null {
   const raw = sessionStorage.getItem('portfolio_data');
   if (!raw) return null;
