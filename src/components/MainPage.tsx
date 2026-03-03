@@ -368,23 +368,41 @@ export default function MainPage() {
           { name: 'CI/CD Dashboard', tech: ['Docker', 'GitHub Actions', 'Next.js'], desc: '배포 파이프라인을 시각화하고 모니터링하는 DevOps 대시보드.' },
         ];
 
+        const escapeHtml = (v: string) =>
+          String(v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
         const downloadPortfolioCode = () => {
           const raw = sessionStorage.getItem('portfolio_data');
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const d: any = raw ? JSON.parse(raw) : {
-            name: '홍길동', role: '프론트엔드 개발자', intro: aiResult.mood,
-            skills: ['React', 'TypeScript', 'Node.js', 'Docker', 'AWS'],
-            projects: SAMPLE_PROJECTS.map(p => ({ name: p.name, description: p.desc, tech: p.tech, highlights: '핵심 성과 및 기여' })),
-            summary: aiResult.mood,
-          };
-          const skillTags = d.skills.map((s: string) => `<span class="skill">${s}</span>`).join('');
-          const projectItems = d.projects.map((p: {name:string;description:string;tech:string[];highlights:string}, i: number) =>
+          let d: any;
+          try {
+            d = raw ? JSON.parse(raw) : null;
+          } catch {
+            d = null;
+          }
+          if (!d || typeof d !== 'object') {
+            d = {
+              name: '홍길동', role: '프론트엔드 개발자', intro: aiResult.mood,
+              skills: ['React', 'TypeScript', 'Node.js', 'Docker', 'AWS'],
+              projects: SAMPLE_PROJECTS.map(p => ({ name: p.name, description: p.desc, tech: p.tech, highlights: '핵심 성과 및 기여' })),
+              summary: aiResult.mood,
+            };
+          }
+          const skills: string[] = Array.isArray(d.skills) ? d.skills : [];
+          const projects: {name:string;description:string;tech:string[];highlights:string}[] = Array.isArray(d.projects) ? d.projects : [];
+          const skillTags = skills.map((s: string) => `<span class="skill">${escapeHtml(s)}</span>`).join('');
+          const projectItems = projects.map((p, i: number) =>
             `<div class="project">
                <div class="pnum">0${i+1}</div>
-               <h3 class="pname">${p.name}</h3>
-               <p class="pdesc">${p.description}</p>
-               <div class="ptechs">${p.tech.map((t:string) => `<span class="ptag">${t}</span>`).join('')}</div>
-               <p class="phigh">${p.highlights}</p>
+               <h3 class="pname">${escapeHtml(p.name ?? '')}</h3>
+               <p class="pdesc">${escapeHtml(p.description ?? '')}</p>
+               <div class="ptechs">${(Array.isArray(p.tech) ? p.tech : []).map((t:string) => `<span class="ptag">${escapeHtml(t)}</span>`).join('')}</div>
+               <p class="phigh">${escapeHtml(p.highlights ?? '')}</p>
              </div>`
           ).join('');
 
@@ -416,24 +434,24 @@ body{background:${aiResult.backgroundColor};color:${aiResult.textColor};font-fam
   <span class="dot" style="background:#ff5f57"></span>
   <span class="dot" style="background:#febc2e"></span>
   <span class="dot" style="background:#28c840"></span>
-  <span class="title">portfolio.sh — ${d.name}</span>
+  <span class="title">portfolio.sh — ${escapeHtml(d.name ?? '')}</span>
 </div>
 <div class="body">
-  <div class="comment"># ${d.name}의 포트폴리오</div>
+  <div class="comment"># ${escapeHtml(d.name ?? '')}의 포트폴리오</div>
   <p class="cmd"><span class="prompt">$ </span>whoami</p>
-  <p class="out">${d.name} — ${d.role}</p>
+  <p class="out">${escapeHtml(d.name ?? '')} — ${escapeHtml(d.role ?? '')}</p>
   <p class="cmd"><span class="prompt">$ </span>cat about.txt</p>
-  <p class="out">${d.intro}</p>
+  <p class="out">${escapeHtml(d.intro ?? '')}</p>
   <p class="cmd"><span class="prompt">$ </span>cat skills.txt</p>
-  <p class="skills-out">${d.skills.join('  ')}</p>
+  <p class="skills-out">${skills.map(escapeHtml).join('  ')}</p>
   <p class="cmd"><span class="prompt">$ </span>ls projects/</p>
-  ${d.projects.map((p: {name:string;description:string;tech:string[];highlights:string}, i: number) => `
+  ${projects.map((p, i: number) => `
   <div class="project">
-    <p class="pfile"><span class="prompt">$ </span>cat projects/0${i+1}-${p.name}.md</p>
+    <p class="pfile"><span class="prompt">$ </span>cat projects/0${i+1}-${escapeHtml(p.name ?? '')}.md</p>
     <div class="pbox">
-      <h3># ${p.name}</h3>
-      <p>${p.description}</p>
-      <p class="tech">Tech: ${p.tech.join(', ')}</p>
+      <h3># ${escapeHtml(p.name ?? '')}</h3>
+      <p>${escapeHtml(p.description ?? '')}</p>
+      <p class="tech">Tech: ${(Array.isArray(p.tech) ? p.tech : []).map(escapeHtml).join(', ')}</p>
     </div>
   </div>`).join('')}
 </div></body></html>`,
@@ -463,11 +481,11 @@ h1{font-size:88px;font-weight:900;line-height:.9;color:${aiResult.primaryColor};
 </style></head><body>
 <section class="cover">
   <p class="issue">ISSUE 01 · ${new Date().getFullYear()} · PORTFOLIO</p>
-  <h1>${d.name.toUpperCase()}</h1>
-  <p class="role">${d.role.toUpperCase()}</p>
+  <h1>${escapeHtml((d.name ?? '').toUpperCase())}</h1>
+  <p class="role">${escapeHtml((d.role ?? '').toUpperCase())}</p>
 </section>
 <div class="main">
-  <p class="quote">${d.intro}</p>
+  <p class="quote">${escapeHtml(d.intro ?? '')}</p>
   <div class="skills">${skillTags}</div>
   ${projectItems}
 </div></body></html>`,
@@ -496,9 +514,9 @@ h1{font-size:64px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
 .phigh{display:none}
 </style></head><body>
 <div class="label">PORTFOLIO</div>
-<h1>${d.name}</h1>
-<p class="role">${d.role.toUpperCase()}</p>
-<p class="intro">${d.intro}</p>
+<h1>${escapeHtml(d.name ?? '')}</h1>
+<p class="role">${escapeHtml((d.role ?? '').toUpperCase())}</p>
+<p class="intro">${escapeHtml(d.intro ?? '')}</p>
 <div class="slabel">SKILLS</div>
 <div class="skills">${skillTags}</div>
 <div class="slabel">PROJECTS</div>
@@ -534,9 +552,9 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
 </style></head><body>
 <section class="hero">
   <div class="label">PORTFOLIO · ${new Date().getFullYear()}</div>
-  <h1>${d.name}</h1>
-  <p class="role">${d.role.toUpperCase()}</p>
-  <p class="intro">${d.intro}</p>
+  <h1>${escapeHtml(d.name ?? '')}</h1>
+  <p class="role">${escapeHtml((d.role ?? '').toUpperCase())}</p>
+  <p class="intro">${escapeHtml(d.intro ?? '')}</p>
 </section>
 <div class="divider"></div>
 <section class="section">
@@ -548,7 +566,7 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
   <div class="slabel">PROJECTS</div>
   ${projectItems}
 </section>
-<div class="footer">${d.summary}</div>
+<div class="footer">${escapeHtml(d.summary ?? '')}</div>
 </body></html>`;
 
           const html = htmlMap[aiResult.layout] ?? minimalHtml;
