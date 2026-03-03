@@ -93,6 +93,37 @@ export async function fetchPublicPortfolio(token: string): Promise<{
   }
 }
 
+export interface SavedResume {
+  id: string;
+  fileName: string;
+  uploadedAt: string;
+}
+
+/** 내 이력서 목록 조회 */
+export async function fetchMyResumes(): Promise<{ success: boolean; resumes?: SavedResume[]; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/resume/list`, {
+      headers: authHeaders(),
+    });
+    return res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
+/** 이력서 삭제 */
+export async function deleteResumeFromServer(id: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/resume/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
 /** 포트폴리오 삭제 */
 export async function deletePortfolioFromServer(id: string): Promise<{ success: boolean; message?: string }> {
   try {
