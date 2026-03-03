@@ -413,7 +413,7 @@ export default function PortfolioResultPage() {
   const aiDesign = getAiDesign();
   const TemplateComponent = TEMPLATE_MAP[templateId] ?? MinimalDark;
 
-  const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied' | 'error'>('idle');
+  const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied' | 'clipboard-error' | 'api-error'>('idle');
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   // ai_design을 한 번 소비한 뒤 정리 — 이후 재방문 시 stale 디자인이 남지 않도록
@@ -430,6 +430,7 @@ export default function PortfolioResultPage() {
     if (!data) return;
 
     setShareState('loading');
+    setShareUrl(null); // 재시도 시 이전 URL 초기화
     const result = await sharePortfolio({
       title: `${data.name}의 포트폴리오`,
       templateId: getSelectedTemplate() ?? 'minimal-dark',
@@ -445,10 +446,11 @@ export default function PortfolioResultPage() {
         setTimeout(() => setShareState('idle'), 2500);
       } catch {
         // 클립보드 실패 시 URL을 화면에 노출해 수동 복사 가능하게
-        setShareState('error');
+        setShareState('clipboard-error');
       }
     } else {
-      setShareState('error');
+      // API 실패 — shareUrl은 null 유지
+      setShareState('api-error');
     }
   };
 
@@ -504,16 +506,16 @@ export default function PortfolioResultPage() {
             style={{
               padding: '7px 20px', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600,
               cursor: shareState === 'loading' ? 'wait' : 'pointer', flexShrink: 0,
-              background: shareState === 'copied' ? '#16a34a' : shareState === 'error' ? '#b45309' : '#000',
+              background: shareState === 'copied' ? '#16a34a' : shareState === 'clipboard-error' ? '#b45309' : shareState === 'api-error' ? '#dc2626' : '#000',
               color: '#fff', transition: 'background 0.2s',
             }}
           >
-            {shareState === 'loading' ? '생성 중...' : shareState === 'copied' ? '✓ 링크 복사됨!' : shareState === 'error' ? '링크 생성됨' : '공유하기'}
+            {shareState === 'loading' ? '생성 중...' : shareState === 'copied' ? '✓ 링크 복사됨!' : shareState === 'clipboard-error' ? '링크 생성됨' : shareState === 'api-error' ? '오류 발생' : '공유하기'}
           </button>
         </div>
 
         {/* 클립보드 실패 시 수동 복사용 URL 표시 */}
-        {shareState === 'error' && shareUrl && (
+        {shareState === 'clipboard-error' && shareUrl && (
           <div style={{
             position: 'absolute', top: 52, right: 24,
             background: '#fff', border: '1px solid #e8e8e8', borderRadius: 8,
