@@ -118,6 +118,7 @@ export async function deleteResumeFromServer(id: string): Promise<{ success: boo
       method: 'DELETE',
       headers: authHeaders(),
     });
+    if (res.status === 204) return { success: true };
     return await res.json();
   } catch {
     return { success: false, message: '서버 연결에 실패했습니다.' };
