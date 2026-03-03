@@ -20,7 +20,7 @@ function MinimalDark({ data }: { data: PortfolioData }) {
     <div style={{ background: '#111', color: '#fff', minHeight: '100vh', fontFamily: 'monospace' }}>
       {/* Hero */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '100px 40px 80px' }}>
-        <div style={{ fontSize: 12, letterSpacing: 4, color: '#555', marginBottom: 20 }}>PORTFOLIO · 2025</div>
+        <div style={{ fontSize: 12, letterSpacing: 4, color: '#555', marginBottom: 20 }}>PORTFOLIO · {new Date().getFullYear()}</div>
         <h1 style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 24, textTransform: 'uppercase' }}>{data.name}</h1>
         <p style={{ fontSize: 14, color: '#888', letterSpacing: 2, marginBottom: 32 }}>{data.role.toUpperCase()}</p>
         <p style={{ fontSize: 15, color: '#aaa', lineHeight: 1.8, maxWidth: 560 }}>{data.intro}</p>
@@ -193,7 +193,7 @@ function Magazine({ data }: { data: PortfolioData }) {
     <div style={{ background: '#f5f0e8', minHeight: '100vh' }}>
       {/* 커버 */}
       <section style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '80px 60px', borderBottom: '3px solid #111' }}>
-        <p style={{ fontSize: 11, letterSpacing: 5, color: '#999', marginBottom: 16 }}>ISSUE 01 · 2025 · PORTFOLIO</p>
+        <p style={{ fontSize: 11, letterSpacing: 5, color: '#999', marginBottom: 16 }}>ISSUE 01 · {new Date().getFullYear()} · PORTFOLIO</p>
         <h1 style={{ fontSize: 96, fontWeight: 900, lineHeight: 0.9, color: '#111', marginBottom: 20 }}>{data.name.toUpperCase()}</h1>
         <p style={{ fontSize: 14, letterSpacing: 4, color: '#888' }}>{data.role.toUpperCase()}</p>
       </section>
@@ -296,9 +296,11 @@ export default function PortfolioResultPage() {
             ← 돌아가기
           </button>
           <button
-            style={{ padding: '7px 20px', border: 'none', borderRadius: 6, background: '#000', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+            disabled
+            style={{ padding: '7px 20px', border: 'none', borderRadius: 6, background: '#ccc', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'not-allowed' }}
+            aria-disabled="true"
           >
-            공유하기
+            공유하기 (준비 중)
           </button>
         </div>
       </div>
