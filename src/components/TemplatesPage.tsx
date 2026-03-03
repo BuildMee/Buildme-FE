@@ -179,18 +179,23 @@ function loadLiked(): Set<string> {
 }
 
 function saveLiked(liked: Set<string>) {
-  localStorage.setItem(LIKES_KEY, JSON.stringify([...liked]));
+  try {
+    localStorage.setItem(LIKES_KEY, JSON.stringify([...liked]));
+  } catch {
+    // private 모드 또는 quota 초과 시 UI는 계속 동작
+  }
 }
 
 export default function TemplatesPage() {
   const [activeFilter, setActiveFilter] = useState<Category>('all');
   const [sort, setSort] = useState<SortKey>('popular');
   const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
-  const [liked, setLiked] = useState<Set<string>>(loadLiked);
+  const [liked, setLiked] = useState<Set<string>>(() => loadLiked());
   const [poppedId, setPoppedId] = useState<string | null>(null);
-  const [likeCounts, setLikeCounts] = useState<Record<string, number>>(
-    () => Object.fromEntries(communityTemplates.map((t) => [t.id, t.likes]))
-  );
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>(() => {
+    const initial = loadLiked();
+    return Object.fromEntries(communityTemplates.map((t) => [t.id, t.likes + (initial.has(t.id) ? 1 : 0)]));
+  });
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const handleLike = (id: string) => {
@@ -199,8 +204,8 @@ export default function TemplatesPage() {
       alert('좋아요는 로그인 후 이용할 수 있어요.');
       return;
     }
-    const wasLiked = liked.has(id);
     setLiked((prev) => {
+      const wasLiked = prev.has(id);
       const next = new Set(prev);
       if (wasLiked) {
         next.delete(id);
@@ -208,12 +213,9 @@ export default function TemplatesPage() {
         next.add(id);
       }
       saveLiked(next);
+      setLikeCounts((c) => ({ ...c, [id]: c[id] + (wasLiked ? -1 : 1) }));
       return next;
     });
-    setLikeCounts((prev) => ({
-      ...prev,
-      [id]: prev[id] + (wasLiked ? -1 : 1),
-    }));
     setPoppedId(id);
     setTimeout(() => setPoppedId(null), 250);
   };
