@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/SubmitPage.module.css';
+import { submitTemplate } from '../utils/portfolioApi';
 
 type Category = 'minimal' | 'dark' | 'creative' | 'tech';
 
@@ -33,14 +34,32 @@ export default function SubmitPage() {
     tags: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+    const result = await submitTemplate({
+      name: form.name,
+      category: form.category,
+      description: form.description,
+      previewUrl: form.previewUrl,
+      githubUrl: form.githubUrl,
+      author: form.author,
+      tags: form.tags,
+    });
+    setLoading(false);
+    if (result.success) {
+      setSubmitted(true);
+    } else {
+      setError(result.message ?? '제출에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const isValid = form.name && form.category && form.description && form.author;
@@ -219,14 +238,20 @@ export default function SubmitPage() {
             </div>
           </div>
 
+          {error && (
+            <p style={{ color: '#e74c3c', fontSize: 13, marginBottom: 12, textAlign: 'right' }}>
+              {error}
+            </p>
+          )}
+
           <div className={styles.actions}>
             <a href="#templates" className={styles.cancelBtn}>취소</a>
             <button
               type="submit"
-              className={`${styles.submitBtn} ${!isValid ? styles.submitBtnDisabled : ''}`}
-              disabled={!isValid}
+              className={`${styles.submitBtn} ${!isValid || loading ? styles.submitBtnDisabled : ''}`}
+              disabled={!isValid || loading}
             >
-              템플릿 제출하기 →
+              {loading ? '제출 중...' : '템플릿 제출하기 →'}
             </button>
           </div>
 
