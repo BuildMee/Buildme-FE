@@ -4,7 +4,7 @@ import Footer from './Footer';
 import styles from '../styles/PricingPage.module.css';
 
 const FREE_FEATURES = [
-  '포트폴리오 3개 저장',
+  '하루 포트폴리오 생성 5개 제한',
   '기본 템플릿 6종',
   '이력서 업로드 1개',
   'PDF 내보내기',
@@ -12,7 +12,7 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  '포트폴리오 무제한 저장',
+  '하루 포트폴리오 생성 무제한',
   '모든 템플릿 무제한',
   '이력서 업로드 무제한',
   'PDF 내보내기',

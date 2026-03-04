@@ -290,22 +290,20 @@ export default function GithubPortfolioPage() {
               .repo-grid-card {
                 animation: cardIn 0.22s cubic-bezier(0.16,1,0.3,1) both;
                 cursor: pointer;
-                border-radius: 14px;
+                border-radius: 4px;
                 padding: 22px 24px;
-                border: 1.5px solid #EBEBEB;
+                border: 1px solid #E5E5E5;
                 background: #fff;
-                transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+                transition: border-color 0.18s, background 0.18s;
                 position: relative;
                 overflow: hidden;
               }
               .repo-grid-card:hover {
-                border-color: #D0D0D0;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+                border-color: #C8C8C8;
               }
               .repo-grid-card.selected {
                 border-color: #0A0A0A;
                 background: #FAFAFA;
-                box-shadow: 0 4px 24px rgba(0,0,0,0.1);
               }
               .repo-grid-card.disabled {
                 opacity: 0.35;
@@ -322,11 +320,11 @@ export default function GithubPortfolioPage() {
                   {/* Filter tabs */}
                   <div style={{
                     display: 'inline-flex', gap: 2,
-                    background: '#EAEAEA', borderRadius: 10, padding: 3,
+                    background: '#EAEAEA', borderRadius: 4, padding: 3,
                   }}>
                     {['all', 'user', ...orgs].map(f => (
                       <button key={f} onClick={() => setFilterOwner(f)} style={{
-                        padding: '6px 16px', borderRadius: 8,
+                        padding: '6px 16px', borderRadius: 2,
                         fontSize: 13, fontWeight: filterOwner === f ? 600 : 400,
                         border: 'none', cursor: 'pointer',
                         background: filterOwner === f ? '#fff' : 'transparent',
@@ -387,7 +385,7 @@ export default function GithubPortfolioPage() {
                             {/* Language color bar */}
                             <div style={{
                               position: 'absolute', top: 0, left: 0, right: 0,
-                              height: 3, borderRadius: '14px 14px 0 0',
+                              height: 3, borderRadius: '4px 4px 0 0',
                               background: selected ? langColor : 'transparent',
                               transition: 'background 0.18s',
                             }} />
@@ -439,7 +437,7 @@ export default function GithubPortfolioPage() {
 
                               {/* Checkbox */}
                               <div style={{
-                                width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 2,
+                                width: 22, height: 22, borderRadius: 3, flexShrink: 0, marginTop: 2,
                                 background: selected ? '#0A0A0A' : 'transparent',
                                 border: selected ? 'none' : '1.5px solid #D8D8D8',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -481,7 +479,7 @@ export default function GithubPortfolioPage() {
                       <div key={fn} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6,
                         padding: '5px 10px 5px 8px',
-                        background: '#F2F2F2', borderRadius: 20,
+                        background: '#F2F2F2', borderRadius: 4,
                         fontSize: 12, color: '#333', fontWeight: 500,
                       }}>
                         {lang && <span style={{ width: 7, height: 7, borderRadius: '50%', background: LANG_COLORS[lang] ?? '#999' }} />}
@@ -520,7 +518,7 @@ export default function GithubPortfolioPage() {
             <style>{`
               .role-chip {
                 padding: 14px 24px;
-                border-radius: 12px;
+                border-radius: 4px;
                 font-size: 15px;
                 font-weight: 500;
                 cursor: pointer;
@@ -529,19 +527,17 @@ export default function GithubPortfolioPage() {
                 color: #333;
                 transition: all 0.15s;
                 font-family: var(--font-heading);
-                box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+                box-shadow: none;
                 white-space: nowrap;
               }
               .role-chip:hover {
                 border-color: #C8C8C8;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
               }
               .role-chip.selected {
                 border-color: transparent;
                 background: #0A0A0A;
                 color: #fff;
                 font-weight: 700;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.18);
               }
             `}</style>
 
@@ -565,7 +561,7 @@ export default function GithubPortfolioPage() {
                     style={{
                       width: '100%', marginTop: 20,
                       padding: '14px 16px', border: '1.5px solid #EBEBEB',
-                      borderRadius: 12, fontSize: 14, background: '#fff',
+                      borderRadius: 4, fontSize: 14, background: '#fff',
                       boxSizing: 'border-box', outline: 'none',
                     }}
                   />
@@ -625,8 +621,8 @@ export default function GithubPortfolioPage() {
                     return (
                       <div key={fullName} style={{
                         background: '#fff',
-                        borderRadius: 14,
-                        border: '1.5px solid #EBEBEB',
+                        borderRadius: 4,
+                        border: '1px solid #E5E5E5',
                         overflow: 'hidden',
                       }}>
                         <div style={{ padding: '18px 24px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -642,7 +638,7 @@ export default function GithubPortfolioPage() {
                               value={detail.role}
                               onChange={(e) => updateRepoDetail(fullName, 'role', e.target.value)}
                               placeholder="예: 프론트엔드 전체 개발, 로그인 기능 구현"
-                              style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', boxSizing: 'border-box', outline: 'none' }}
+                              style={{ width: '100%', padding: '12px 14px', border: '1px solid #E5E5E5', borderRadius: 4, fontSize: 14, background: '#FAFAFA', boxSizing: 'border-box', outline: 'none' }}
                             />
                           </div>
                           <div>
@@ -652,7 +648,7 @@ export default function GithubPortfolioPage() {
                               onChange={(e) => updateRepoDetail(fullName, 'highlights', e.target.value)}
                               placeholder="예: 실시간 채팅 기능, 성능 최적화로 로딩 속도 30% 개선, 팀 프로젝트에서 PM 역할"
                               rows={3}
-                              style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                              style={{ width: '100%', padding: '12px 14px', border: '1px solid #E5E5E5', borderRadius: 4, fontSize: 14, background: '#FAFAFA', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
                             />
                           </div>
                         </div>
@@ -688,7 +684,7 @@ export default function GithubPortfolioPage() {
           <>
             <div style={{ minHeight: '70vh', background: '#F7F7F8', paddingBottom: 120 }}>
               <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 40px 0' }}>
-                <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #EBEBEB', overflow: 'hidden' }}>
+                <div style={{ background: '#fff', borderRadius: 4, border: '1px solid #E5E5E5', overflow: 'hidden' }}>
                   {[
                     { key: 'awards', label: '수상 내역', placeholder: '예: 2024 해커톤 대상, 교내 알고리즘 경진대회 1위' },
                     { key: 'certifications', label: '자격증 / 수료', placeholder: '예: 정보처리기사, AWS Solutions Architect, Coursera ML 수료' },
@@ -702,7 +698,7 @@ export default function GithubPortfolioPage() {
                         onChange={(e) => setExtraInfo(prev => ({ ...prev, [key]: e.target.value }))}
                         placeholder={placeholder}
                         rows={3}
-                        style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', resize: 'vertical', minHeight: 80, boxSizing: 'border-box', outline: 'none' }}
+                        style={{ width: '100%', padding: '12px 14px', border: '1px solid #E5E5E5', borderRadius: 4, fontSize: 14, background: '#FAFAFA', resize: 'vertical', minHeight: 80, boxSizing: 'border-box', outline: 'none' }}
                       />
                     </div>
                   ))}

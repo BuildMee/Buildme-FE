@@ -76,6 +76,7 @@ export default function MyPage() {
   const handleLogout = () => {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('auth_provider');
+    sessionStorage.removeItem('is_admin');
     window.location.hash = '';
   };
 
@@ -259,7 +260,7 @@ export default function MyPage() {
                 <span className={styles.planBadge}>무료</span>
               </div>
               <p className={styles.planCardDesc}>
-                포트폴리오 3개 · 기본 템플릿 6종 · 이력서 업로드 1개
+                하루 포트폴리오 5개 제한 · 기본 템플릿 6종 · 이력서 업로드 1개
               </p>
               <a href="#pricing" className={styles.planUpgradeBtn}>
                 Pro로 업그레이드 →

@@ -55,6 +55,19 @@ export default function GitHubCallbackPage() {
         if (data.success && data.access_token) {
           sessionStorage.setItem('access_token', data.access_token);
           sessionStorage.setItem('auth_provider', provider);
+
+          // 어드민 여부 확인
+          if (detectedProvider === 'github') {
+            fetch(`${apiBase}/api/auth/me`, {
+              headers: { Authorization: `Bearer ${data.access_token}` },
+            })
+              .then((r) => r.json())
+              .then((me: { isAdmin?: boolean }) => {
+                sessionStorage.setItem('is_admin', me.isAdmin ? 'true' : 'false');
+              })
+              .catch(() => {});
+          }
+
           setStatus('success');
         } else {
           setErrorMsg(data.message || '토큰 발급에 실패했습니다.');

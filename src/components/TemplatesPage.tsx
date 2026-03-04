@@ -139,6 +139,84 @@ function PreviewCinematic() {
   );
 }
 
+function PreviewGlass() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProGlass}`}>
+      <div className={styles.proGlassGlow} />
+      <div className={styles.proGlassCard}>
+        <div className={styles.proGlassName}>KIM<br />DOHYUN</div>
+        <div className={styles.proGlassSub}>AI ENGINEER</div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewMagazine() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProMag}`} style={{ padding: '28px 28px 24px', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div className={styles.proMagNum}>04</div>
+      <div className={styles.proMagAccent} />
+      <div className={styles.proMagName}>SHIN<br />YUJIN</div>
+      <div className={styles.proMagRole}>PRODUCT DESIGNER</div>
+    </div>
+  );
+}
+
+function PreviewTypo() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProTypo}`}>
+      <div className={styles.proTypoLeft}>
+        <div className={styles.proTypoBig}>DEV<br />OPS</div>
+      </div>
+      <div className={styles.proTypoRight}>
+        <div className={styles.proTypoName}>BAEK<br />SEONGMIN</div>
+        <div className={styles.proTypoRole}>CLOUD · K8S</div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewNeonGrid() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProNeonGrid}`}>
+      <div className={styles.neonGridLines} />
+      <div className={styles.neonGridContent}>
+        <div className={styles.neonGridTag}>// portfolio</div>
+        <div className={styles.neonGridName}>CHOI<br />JUNHO</div>
+        <div className={styles.neonGridRole}>FULLSTACK DEVELOPER</div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewPaper() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProPaper}`}>
+      <div className={styles.paperTop}>
+        <div className={styles.paperIndex}>NO. 07</div>
+        <div className={styles.paperStamp}>PORTFOLIO</div>
+      </div>
+      <div className={styles.paperName}>OH<br />SEUNGAH</div>
+      <div className={styles.paperRule} />
+      <div className={styles.paperRole}>UX RESEARCHER</div>
+    </div>
+  );
+}
+
+function PreviewAurora() {
+  return (
+    <div className={`${styles.cardPreview} ${styles.previewProAurora}`}>
+      <div className={styles.auroraBlob1} />
+      <div className={styles.auroraBlob2} />
+      <div className={styles.auroraContent}>
+        <div className={styles.auroraName}>JANG<br />EUNJI</div>
+        <div className={styles.auroraLine} />
+        <div className={styles.auroraRole}>FRONTEND DEV</div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Data ── */
 
 const communityTemplates: CommunityTemplate[] = [
@@ -151,6 +229,12 @@ const communityTemplates: CommunityTemplate[] = [
   { id: 'mono', name: '모노크롬', category: 'minimal', author: 'han_jun', likes: 201, isPro: true, component: <PreviewMono /> },
   { id: 'split', name: '스플릿 레이아웃', category: 'creative', author: 'yoon_seri', likes: 178, isNew: true, isPro: true, component: <PreviewSplit /> },
   { id: 'cinematic', name: '시네마틱', category: 'dark', author: 'ryu_dh', likes: 143, isPro: true, component: <PreviewCinematic /> },
+  { id: 'glass', name: '글래스모피즘', category: 'dark', author: 'kim_dh', likes: 118, isNew: true, isPro: true, component: <PreviewGlass /> },
+  { id: 'magazine', name: '매거진', category: 'creative', author: 'shin_yj', likes: 97, isNew: true, isPro: true, component: <PreviewMagazine /> },
+  { id: 'typo', name: '노이르 타이포', category: 'minimal', author: 'baek_sm', likes: 84, isPro: true, component: <PreviewTypo /> },
+  { id: 'aurora', name: '오로라', category: 'dark', author: 'jang_ej', likes: 61, isNew: true, isPro: true, component: <PreviewAurora /> },
+  { id: 'neongrid', name: '네온 그리드', category: 'tech', author: 'choi_jh', likes: 49, isNew: true, isPro: true, component: <PreviewNeonGrid /> },
+  { id: 'paper', name: '페이퍼', category: 'minimal', author: 'oh_sa', likes: 37, isNew: true, isPro: true, component: <PreviewPaper /> },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
@@ -172,6 +256,8 @@ const STAGGER: Record<number, string> = {
   0: styles.stagger0, 1: styles.stagger1, 2: styles.stagger2,
   3: styles.stagger3, 4: styles.stagger4, 5: styles.stagger5,
   6: styles.stagger6, 7: styles.stagger7, 8: styles.stagger8,
+  9: styles.stagger0, 10: styles.stagger1, 11: styles.stagger2, 12: styles.stagger3,
+  13: styles.stagger4, 14: styles.stagger5,
 };
 
 /* ── Page ── */
