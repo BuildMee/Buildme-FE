@@ -37,13 +37,28 @@ interface GeneratedPortfolio {
   summary: string;
 }
 
-const STEPS = ['레포 선택', '직군 선택', '프로젝트 상세', '추가 정보', 'AI 분석', '포트폴리오 완성'];
 const STEP_KEYS: Step[] = ['select', 'role', 'detail', 'extra', 'generating', 'done'];
+
+const PHASES = ['프로젝트 선택', '상세 정보 입력', 'AI 분석', '포트폴리오'];
+const getPhaseIndex = (s: Step): number => {
+  if (s === 'select') return 0;
+  if (['role', 'detail', 'extra'].includes(s)) return 1;
+  if (s === 'generating') return 2;
+  return 3;
+};
 
 const ROLES = [
   '프론트엔드', '백엔드', '풀스택', 'iOS', 'Android',
   'DevOps', 'PM', 'UI/UX 디자이너', '데이터 엔지니어', '기타',
 ];
+
+// Language color map for visual flair
+const LANG_COLORS: Record<string, string> = {
+  TypeScript: '#3178C6', JavaScript: '#F7DF1E', Python: '#3776AB',
+  Java: '#ED8B00', 'C++': '#00599C', C: '#555555', Go: '#00ADD8',
+  Rust: '#DEA584', Swift: '#FA7343', Kotlin: '#7F52FF',
+  HTML: '#E34F26', CSS: '#1572B6', Vue: '#42B883', React: '#61DAFB',
+};
 
 export default function GithubPortfolioPage() {
   const [step, setStep] = useState<Step>('select');
@@ -53,7 +68,6 @@ export default function GithubPortfolioPage() {
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
   const [filterOwner, setFilterOwner] = useState<string>('all');
 
-  // 상세 정보
   const [major, setMajor] = useState('');
   const [customMajor, setCustomMajor] = useState('');
   const [repoDetails, setRepoDetails] = useState<Record<string, RepoDetail>>({});
@@ -62,6 +76,7 @@ export default function GithubPortfolioPage() {
   const [portfolio, setPortfolio] = useState<GeneratedPortfolio | null>(null);
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
+  const [hoveredRepo, setHoveredRepo] = useState<number | null>(null);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
   const token = sessionStorage.getItem('access_token');
@@ -134,13 +149,12 @@ export default function GithubPortfolioPage() {
         savePortfolioData(portfolioData);
         if (data.fallback) setError('⚠️ AI API 한도 초과 — 레포 정보 기반으로 자동 생성된 초안입니다.');
 
-        // 로그인 상태일 때 서버에 저장
         if (token) {
           savePortfolioToServer({
             title: `${userName || '내'}의 포트폴리오`,
             templateId: getSelectedTemplate() ?? 'minimal-dark',
             data: portfolioData,
-          }).catch(() => { /* 저장 실패 시 무시 (로컬 데이터는 유지) */ });
+          }).catch(() => {});
         }
 
         setStep('done');
@@ -154,7 +168,17 @@ export default function GithubPortfolioPage() {
     }
   };
 
+  const phaseIndex = getPhaseIndex(step);
   const currentStepIdx = STEP_KEYS.indexOf(step);
+
+  const HEADER_TEXT: Record<Step, { title: string; sub: string }> = {
+    select:     { title: '나를 대표하는 프로젝트 선택', sub: '선택한 레포지토리가 AI 포트폴리오의 핵심 재료가 됩니다. 나를 가장 잘 표현하는 프로젝트를 골라보세요.' },
+    role:       { title: '직군을 선택해주세요', sub: '본인의 직군/역할을 선택하면 AI가 맞춤형 포트폴리오를 작성합니다.' },
+    detail:     { title: '프로젝트 상세 정보 입력', sub: '각 프로젝트에서 내가 한 역할과 특징을 입력하면 더 정확한 포트폴리오가 만들어져요.' },
+    extra:      { title: '추가 정보 입력', sub: '수상 내역, 자격증, 대외활동 등 포트폴리오에 포함할 추가 정보를 입력해주세요.' },
+    generating: { title: 'AI 분석 중', sub: '선택한 레포지토리를 분석해 포트폴리오 초안을 작성하고 있습니다.' },
+    done:       { title: '포트폴리오 초안 완성!', sub: 'AI가 레포지토리를 분석해 초안을 작성했습니다. 아래에서 확인하세요.' },
+  };
 
   return (
     <div className={styles.page}>
@@ -163,108 +187,545 @@ export default function GithubPortfolioPage() {
       <section className={styles.header}>
         <div className={styles.headerInner}>
           <h1 className={styles.headerTitle}>
-            GitHub으로 시작하기
+            {HEADER_TEXT[step].title}
           </h1>
           <p className={styles.headerSub}>
-            레포지토리를 선택하면 AI가 분석해서 포트폴리오 초안을 완성합니다.
+            {HEADER_TEXT[step].sub}
           </p>
         </div>
-        {/* 4단계 스텝 */}
-        <div className={styles.steps}>
-          {STEPS.map((s, i) => (
-            <div key={i} className={styles.stepGroup}>
-              <div className={`${styles.step} ${i === currentStepIdx ? styles.stepActive : ''}`}>
-                <div className={styles.stepNum}>0{i + 1}</div>
-                <div className={styles.stepText}>{s}</div>
+
+        {/* ── 3-Phase Progress Header ── */}
+        <div style={{
+          maxWidth: 1400,
+          margin: '0 auto',
+          padding: '0 80px 44px',
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          {PHASES.map((phase, i) => {
+            const isActive = i === phaseIndex;
+            const isCompleted = i < phaseIndex;
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < PHASES.length - 1 ? '1' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  {/* Circle */}
+                  <div style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    background: isActive || isCompleted ? '#0A0A0A' : 'transparent',
+                    border: isActive || isCompleted ? 'none' : '1.5px solid #DADADA',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'all 0.3s ease',
+                    boxShadow: isActive ? '0 0 0 4px rgba(10,10,10,0.08)' : 'none',
+                  }}>
+                    {isCompleted ? (
+                      <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                        <path d="M1.5 5L5.5 9L11.5 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 12,
+                        color: isActive ? '#FFF' : '#AAAAAA',
+                        lineHeight: 1,
+                      }}>{i + 1}</span>
+                    )}
+                  </div>
+
+                  {/* Label */}
+                  <div>
+                    <p style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      color: isActive ? '#0A0A0A' : isCompleted ? '#555' : '#AAAAAA',
+                      textTransform: 'uppercase',
+                      transition: 'color 0.3s',
+                      marginBottom: 0,
+                    }}>{phase}</p>
+                  </div>
+                </div>
+
+                {/* Connector line */}
+                {i < PHASES.length - 1 && (
+                  <div style={{
+                    flex: 1,
+                    height: 1,
+                    background: isCompleted ? '#0A0A0A' : '#E5E5E5',
+                    margin: '0 20px',
+                    transition: 'background 0.4s ease',
+                  }} />
+                )}
               </div>
-              {i < STEPS.length - 1 && <div className={styles.stepArrow}>→</div>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
-      <div style={{ width: '100%', padding: '48px 60px 100px', boxSizing: 'border-box' }}>
+      {/* ── Page body ── */}
+      <div style={{
+        width: '100%',
+        padding: step === 'select' ? '36px 60px 0' : '48px 60px 100px',
+        boxSizing: 'border-box',
+        background: step === 'select' ? '#F4F4F5' : 'transparent',
+        minHeight: step === 'select' ? '100vh' : undefined,
+      }}>
 
-        {/* ── Step 1: 레포 선택 ── */}
+        {/* ════════════════════════════════════════
+            STEP 1 — Premium Select UI
+        ════════════════════════════════════════ */}
         {step === 'select' && (
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>레포지토리 선택</h2>
-            <p className={styles.cardDesc}>포트폴리오에 포함할 레포지토리를 선택하세요. (최대 5개 권장)</p>
+          <>
+            <style>{`
+              @keyframes repoCardIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to   { opacity: 1; transform: translateY(0); }
+              }
+              @keyframes checkPop {
+                0%   { transform: scale(0) rotate(-8deg); }
+                65%  { transform: scale(1.12) rotate(2deg); }
+                100% { transform: scale(1) rotate(0deg); }
+              }
+              @keyframes counterPulse {
+                0%   { transform: scale(1); }
+                40%  { transform: scale(1.05); }
+                100% { transform: scale(1); }
+              }
+              @keyframes panelSlideIn {
+                from { opacity: 0; transform: translateX(12px); }
+                to   { opacity: 1; transform: translateX(0); }
+              }
+              @keyframes _spin { to { transform: rotate(360deg); } }
+              .repo-item { animation: repoCardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+              .check-icon { animation: checkPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+              .counter-num { animation: counterPulse 0.2s ease; }
+              .summary-panel { animation: panelSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+            `}</style>
 
-            {/* 필터 탭 */}
-            {!reposLoading && repos.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-                {['all', 'user', ...orgs].map((f) => (
-                  <button key={f} onClick={() => setFilterOwner(f)} style={{
-                    padding: '6px 16px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                    border: filterOwner === f ? '2px solid #000' : '2px solid #e8e8e8',
-                    background: filterOwner === f ? '#000' : '#fff',
-                    color: filterOwner === f ? '#fff' : '#333',
-                    fontWeight: filterOwner === f ? 700 : 400,
+            <div style={{
+              display: 'flex',
+              gap: 20,
+              maxWidth: 1200,
+              margin: '0 auto',
+              paddingBottom: 100,
+            }}>
+
+              {/* ── LEFT: Repo list ── */}
+              <div style={{ flex: '1 1 0', minWidth: 0 }}>
+
+                {/* Filter tabs — segmented control */}
+                {!reposLoading && repos.length > 0 && (
+                  <div style={{
+                    display: 'inline-flex',
+                    gap: 2,
+                    marginBottom: 16,
+                    background: '#EAEAEA',
+                    borderRadius: 8,
+                    padding: 3,
                   }}>
-                    {f === 'all' ? '전체' : f === 'user' ? '내 레포' : f}
-                  </button>
-                ))}
-              </div>
-            )}
+                    {['all', 'user', ...orgs].map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setFilterOwner(f)}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: 6,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-heading)',
+                          fontWeight: filterOwner === f ? 600 : 400,
+                          border: 'none',
+                          background: filterOwner === f ? '#FFFFFF' : 'transparent',
+                          color: filterOwner === f ? '#0A0A0A' : '#888888',
+                          transition: 'all 0.12s ease',
+                          boxShadow: filterOwner === f ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                          whiteSpace: 'nowrap',
+                        }}>
+                        {f === 'all' ? '전체' : f === 'user' ? '내 레포' : f}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-            {reposLoading ? (
-              <p style={{ color: '#888', padding: '40px 0', textAlign: 'center' }}>불러오는 중...</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 400, overflowY: 'auto', marginBottom: 24 }}>
-                {repos.filter((r) => filterOwner === 'all' || r.owner === filterOwner).map((r) => {
-                  const selected = selectedRepos.has(r.fullName);
-                  return (
-                    <div key={r.id} onClick={() => toggleRepo(r.fullName)} style={{
-                      padding: '14px 18px', border: selected ? '2px solid #000' : '2px solid #e8e8e8',
-                      borderRadius: 10, cursor: 'pointer', display: 'flex',
-                      justifyContent: 'space-between', alignItems: 'center',
-                      background: selected ? '#f8f8f8' : '#fff', transition: 'all 0.15s',
-                    }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontWeight: 700, fontSize: 15 }}>{r.name}</span>
-                          {r.owner !== 'user' && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', background: '#f0f0f0', borderRadius: 10, color: '#666' }}>{r.owner}</span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 13, color: '#888' }}>
-                          {r.language && <span style={{ marginRight: 8 }}>{r.language}</span>}
-                          {r.description ?? '설명 없음'}
-                        </div>
-                      </div>
-                      <div style={{
-                        width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                        border: selected ? 'none' : '2px solid #ccc',
-                        background: selected ? '#000' : 'transparent',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: 14,
-                      }}>{selected ? '✓' : ''}</div>
+                {/* Repo cards */}
+                {reposLoading ? (
+                  <div style={{
+                    padding: '80px 0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 16,
+                  }}>
+                    <div style={{
+                      width: 26,
+                      height: 26,
+                      border: '2px solid #D8D8D8',
+                      borderTopColor: '#0A0A0A',
+                      borderRadius: '50%',
+                      animation: '_spin 0.8s linear infinite',
+                    }} />
+                    <span style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      color: '#BBBBBB',
+                      letterSpacing: 1.5,
+                    }}>불러오는 중...</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {repos
+                      .filter((r) => filterOwner === 'all' || r.owner === filterOwner)
+                      .map((r, idx) => {
+                        const selected = selectedRepos.has(r.fullName);
+                        const maxReached = selectedRepos.size >= 5 && !selected;
+                        const isHovered = hoveredRepo === r.id && !maxReached;
+                        const langColor = LANG_COLORS[r.language ?? ''] ?? '#888';
+
+                        return (
+                          <div
+                            key={r.id}
+                            className="repo-item"
+                            onMouseEnter={() => !maxReached && setHoveredRepo(r.id)}
+                            onMouseLeave={() => setHoveredRepo(null)}
+                            onClick={() => !maxReached && toggleRepo(r.fullName)}
+                            style={{
+                              animationDelay: `${Math.min(idx * 28, 280)}ms`,
+                              padding: '13px 16px',
+                              border: selected
+                                ? '1px solid #0A0A0A'
+                                : isHovered
+                                  ? '1px solid #C0C0C0'
+                                  : '1px solid #E4E4E4',
+                              borderRadius: 8,
+                              cursor: maxReached ? 'not-allowed' : 'pointer',
+                              background: selected ? '#FFFFFF' : isHovered ? '#FFFFFF' : '#FAFAFA',
+                              boxShadow: selected
+                                ? '0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)'
+                                : isHovered
+                                  ? '0 1px 6px rgba(0,0,0,0.06)'
+                                  : 'none',
+                              transition: 'all 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
+                              opacity: maxReached ? 0.28 : 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 12,
+                              position: 'relative',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {/* Left accent bar */}
+                            <div style={{
+                              position: 'absolute',
+                              left: 0, top: 0, bottom: 0,
+                              width: selected ? 2 : 0,
+                              background: '#0A0A0A',
+                              transition: 'width 0.16s ease',
+                            }} />
+
+                            {/* Content */}
+                            <div style={{
+                              flex: 1,
+                              paddingLeft: selected ? 8 : 0,
+                              minWidth: 0,
+                              transition: 'padding 0.16s ease',
+                            }}>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 7,
+                                marginBottom: 3,
+                                flexWrap: 'wrap',
+                              }}>
+                                <span style={{
+                                  fontFamily: 'var(--font-heading)',
+                                  fontWeight: 600,
+                                  fontSize: 13.5,
+                                  color: '#0A0A0A',
+                                  letterSpacing: -0.3,
+                                }}>
+                                  {r.name}
+                                </span>
+
+                                {r.language && (
+                                  <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    fontSize: 11,
+                                    padding: '1px 7px',
+                                    background: '#EFEFEF',
+                                    borderRadius: 4,
+                                    color: '#555',
+                                    fontFamily: 'var(--font-mono)',
+                                    letterSpacing: 0.1,
+                                  }}>
+                                    <span style={{
+                                      width: 6, height: 6,
+                                      borderRadius: '50%',
+                                      background: langColor,
+                                      flexShrink: 0,
+                                    }} />
+                                    {r.language}
+                                  </span>
+                                )}
+
+                                {r.owner !== 'user' && (
+                                  <span style={{
+                                    fontSize: 11,
+                                    padding: '1px 7px',
+                                    background: '#EFEFEF',
+                                    borderRadius: 4,
+                                    color: '#999',
+                                    fontFamily: 'var(--font-mono)',
+                                    letterSpacing: 0.1,
+                                  }}>
+                                    {r.owner}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p style={{
+                                fontSize: 12,
+                                color: '#9A9A9A',
+                                lineHeight: 1.4,
+                                fontFamily: 'var(--font-heading)',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                margin: 0,
+                              }}>
+                                {r.description ?? '설명 없음'}
+                              </p>
+                            </div>
+
+                            {/* Checkbox — square for precision */}
+                            <div
+                              className={selected ? 'check-icon' : ''}
+                              style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 5,
+                                background: selected ? '#0A0A0A' : 'transparent',
+                                border: selected ? 'none' : `1.5px solid ${isHovered ? '#BBBBBB' : '#DEDEDE'}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                transition: 'all 0.14s',
+                              }}
+                            >
+                              {selected && (
+                                <svg width="10" height="7" viewBox="0 0 10 7" fill="none">
+                                  <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+
+                {/* Max reached notice */}
+                {selectedRepos.size >= 5 && (
+                  <div style={{
+                    marginTop: 10,
+                    padding: '9px 14px',
+                    background: '#FFFBEB',
+                    border: '1px solid #EED97A',
+                    borderRadius: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}>
+                    <span style={{ fontSize: 13 }}>⚠</span>
+                    <p style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      color: '#7A5800',
+                      margin: 0,
+                    }}>최대 5개까지 선택 가능합니다.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* ── RIGHT: Control panel ── */}
+              <div className="summary-panel" style={{ width: 268, flexShrink: 0 }}>
+                <div style={{ position: 'sticky', top: 24 }}>
+
+                  {/* Dark header — count */}
+                  <div style={{
+                    background: '#0A0A0A',
+                    borderRadius: '10px 10px 0 0',
+                    padding: '22px 20px 18px',
+                  }}>
+                    <p style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 9,
+                      letterSpacing: 2.5,
+                      color: '#505050',
+                      marginBottom: 10,
+                      textTransform: 'uppercase',
+                    }}>선택된 레포</p>
+
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 14 }}>
+                      <span
+                        key={selectedRepos.size}
+                        className="counter-num"
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontSize: 68,
+                          color: selectedRepos.size > 0 ? '#FFFFFF' : '#242424',
+                          lineHeight: 1,
+                          transition: 'color 0.25s',
+                        }}
+                      >{selectedRepos.size}</span>
+                      <span style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 30,
+                        color: '#303030',
+                        lineHeight: 1,
+                      }}>/ 5</span>
                     </div>
-                  );
-                })}
-              </div>
-            )}
 
-            <div className={styles.actions}>
-              <a href="#" className={styles.cancelBtn}>취소</a>
-              <button
-                className={`${styles.nextBtn} ${selectedRepos.size === 0 ? styles.nextBtnDisabled : ''}`}
-                disabled={selectedRepos.size === 0}
-                onClick={() => setStep('role')}
-              >
-                다음 ({selectedRepos.size}개 선택) →
-              </button>
+                    {/* 5-segment bar */}
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <div key={n} style={{
+                          flex: 1,
+                          height: 2,
+                          borderRadius: 1,
+                          background: n <= selectedRepos.size ? '#FFFFFF' : '#1E1E1E',
+                          transition: 'background 0.2s ease',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Selected list */}
+                  <div style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #E4E4E4',
+                    borderTop: 'none',
+                    minHeight: 72,
+                    padding: '12px 16px',
+                  }}>
+                    {selectedRepos.size === 0 ? (
+                      <p style={{
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: 12,
+                        color: '#C4C4C4',
+                        lineHeight: 1.65,
+                        textAlign: 'center',
+                        padding: '10px 0',
+                        margin: 0,
+                      }}>왼쪽 목록에서 레포를 선택하세요.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {Array.from(selectedRepos).map((fullName) => {
+                          const repo = repos.find(r => r.fullName === fullName);
+                          return (
+                            <div key={fullName} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '7px 10px',
+                              background: '#F6F6F6',
+                              borderRadius: 6,
+                              border: '1px solid #EEEEEE',
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                                <div style={{
+                                  width: 4, height: 4,
+                                  borderRadius: '50%',
+                                  background: '#0A0A0A',
+                                  flexShrink: 0,
+                                }} />
+                                <span style={{
+                                  fontFamily: 'var(--font-heading)',
+                                  fontSize: 12,
+                                  color: '#1A1A1A',
+                                  fontWeight: 500,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {repo?.name ?? fullName.split('/')[1]}
+                                </span>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleRepo(fullName); }}
+                                style={{
+                                  color: '#C8C8C8',
+                                  fontSize: 15,
+                                  cursor: 'pointer',
+                                  padding: '0 2px',
+                                  lineHeight: 1,
+                                  flexShrink: 0,
+                                  transition: 'color 0.12s',
+                                  background: 'transparent',
+                                  border: 'none',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.color = '#0A0A0A')}
+                                onMouseLeave={e => (e.currentTarget.style.color = '#C8C8C8')}
+                              >×</button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA */}
+                  <button
+                    disabled={selectedRepos.size === 0}
+                    onClick={() => setStep('role')}
+                    style={{
+                      width: '100%',
+                      padding: '13px',
+                      background: selectedRepos.size > 0 ? '#0A0A0A' : '#EBEBEB',
+                      color: selectedRepos.size > 0 ? '#FFFFFF' : '#BBBBBB',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: 1.5,
+                      border: 'none',
+                      borderRadius: '0 0 10px 10px',
+                      cursor: selectedRepos.size > 0 ? 'pointer' : 'not-allowed',
+                      transition: 'background 0.15s ease',
+                      textTransform: 'uppercase',
+                    }}
+                    onMouseEnter={e => { if (selectedRepos.size > 0) e.currentTarget.style.background = '#1C1C1C'; }}
+                    onMouseLeave={e => { if (selectedRepos.size > 0) e.currentTarget.style.background = '#0A0A0A'; }}
+                  >
+                    {selectedRepos.size > 0 ? '다음 단계 →' : '레포를 먼저 선택하세요'}
+                  </button>
+
+                  {/* Info note */}
+                  <p style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: 11,
+                    color: '#BBBBBB',
+                    lineHeight: 1.7,
+                    marginTop: 14,
+                    paddingLeft: 2,
+                  }}>
+                    ✦ AI가 코드 패턴, 기술 스택, 프로젝트 규모를 분석해 맞춤형 포트폴리오를 생성합니다.
+                  </p>
+                </div>
+              </div>
+
             </div>
-          </div>
+          </>
         )}
 
         {/* ── Step 2: 직군 선택 ── */}
         {step === 'role' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>직군 선택</h2>
-            <p className={styles.cardDesc}>본인의 직군/역할을 선택해주세요. AI가 맞춤형 포트폴리오를 작성합니다.</p>
-
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
               {ROLES.map((r) => (
                 <button key={r} onClick={() => setMajor(r)} style={{
@@ -300,15 +761,11 @@ export default function GithubPortfolioPage() {
           </div>
         )}
 
-        {/* ── Step 3: 프로젝트 상세 입력 ── */}
+        {/* ── Step 3: 프로젝트 상세 ── */}
         {step === 'detail' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>프로젝트 상세 정보</h2>
-            <p className={styles.cardDesc}>각 프로젝트에서 내가 한 역할과 특징을 입력하면 더 정확한 포트폴리오가 만들어져요.</p>
-
             {error && <p style={{ color: 'red', marginBottom: 16, fontSize: 14 }}>{error}</p>}
 
-            {/* 레포별 상세 입력 */}
             <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>프로젝트별 상세 정보</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
               {Array.from(selectedRepos).map((fullName) => {
@@ -360,12 +817,6 @@ export default function GithubPortfolioPage() {
         {/* ── Step 4: 추가 정보 ── */}
         {step === 'extra' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>추가 정보 입력</h2>
-            <p className={styles.cardDesc}>
-              포트폴리오에 포함할 추가 정보를 입력해주세요.
-              <span style={{ marginLeft: 8, fontSize: 12, color: '#aaa' }}>선택사항</span>
-            </p>
-
             <div className={styles.fields}>
               {[
                 { key: 'awards', label: '수상 내역', placeholder: '예: 2024 해커톤 대상, 교내 알고리즘 경진대회 1위' },
@@ -413,7 +864,6 @@ export default function GithubPortfolioPage() {
               animation: '_spin 0.85s linear infinite',
               marginBottom: 28,
             }} />
-            <h2 style={{ fontSize: 19, fontWeight: 700, marginBottom: 14, letterSpacing: -0.3 }}>AI 분석 중</h2>
             <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
               {[0, 1, 2].map(i => (
                 <div key={i} style={{
@@ -434,14 +884,13 @@ export default function GithubPortfolioPage() {
           </div>
         )}
 
-        {/* ── Step 5: 완료 ── */}
+        {/* ── Step 6: 완료 ── */}
         {step === 'done' && portfolio && (
           <div style={{ width: '100%' }}>
-            {/* 상단 완성 배너 */}
             <div style={{ background: '#000', color: '#fff', padding: '48px 60px', marginBottom: 40 }}>
               <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
                 <div>
-                  <p style={{ fontSize: 11, letterSpacing: 3, color: '#666', marginBottom: 10 }}>AI ANALYSIS COMPLETE</p>
+                  <p style={{ fontSize: 11, letterSpacing: 3, color: '#666', marginBottom: 10 }}>AI 분석 완료</p>
                   <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>포트폴리오 초안 완성!</h2>
                   <p style={{ fontSize: 14, color: '#888' }}>AI가 레포지토리를 분석해 초안을 작성했습니다.</p>
                 </div>
@@ -458,34 +907,25 @@ export default function GithubPortfolioPage() {
               </div>
             </div>
 
-            {/* 본문 3단 그리드 */}
             <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-
-              {/* 자기소개 */}
               <div style={{ gridColumn: '1 / -1', background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 12 }}>INTRO</p>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 12 }}>소개</p>
                 <p style={{ fontSize: 15, lineHeight: 1.9, color: '#333' }}>{portfolio.intro}</p>
               </div>
-
-              {/* 기술스택 */}
               <div style={{ background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>SKILLS</p>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>기술 스택</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {portfolio.skills.map((s) => (
                     <span key={s} style={{ padding: '6px 16px', background: '#000', color: '#fff', borderRadius: 20, fontSize: 13 }}>{s}</span>
                   ))}
                 </div>
               </div>
-
-              {/* 요약 */}
               <div style={{ background: '#000', color: '#fff', borderRadius: 14, padding: '28px 32px' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#555', marginBottom: 12 }}>SUMMARY</p>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#555', marginBottom: 12 }}>요약</p>
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: '#ccc' }}>{portfolio.summary}</p>
               </div>
-
-              {/* 프로젝트 */}
               <div style={{ gridColumn: '1 / -1' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>PROJECTS</p>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>프로젝트</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {portfolio.projects.map((p, i) => (
                     <div key={p.name} style={{ background: '#f8f8f8', borderRadius: 14, padding: '24px 28px', display: 'grid', gridTemplateColumns: '40px 1fr', gap: 20, alignItems: 'start' }}>
@@ -504,12 +944,15 @@ export default function GithubPortfolioPage() {
                   ))}
                 </div>
               </div>
-
             </div>
           </div>
         )}
 
       </div>
+
+      {/* Suppress unused variable warning */}
+      {currentStepIdx === -1 && null}
+
       <Footer />
     </div>
   );

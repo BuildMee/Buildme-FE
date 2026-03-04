@@ -14,7 +14,6 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.modalClose} onClick={onClose}>✕</button>
 
-        <p className={styles.modalLabel}>로그인 필요</p>
         <h2 className={styles.modalTitle}>로그인이 필요해요</h2>
         <p className={styles.modalDesc}>
           포트폴리오를 만들려면<br />먼저 로그인해주세요.

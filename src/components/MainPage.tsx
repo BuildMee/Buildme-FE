@@ -180,9 +180,13 @@ export default function MainPage() {
   const [aiFallback, setAiFallback] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [pickedTemplate, setPickedTemplate] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const isLoggedIn = !!sessionStorage.getItem('access_token');
 
-  const handleResumeStart = () => { window.location.hash = 'template-select'; };
+  const handleResumeStart = () => {
+    if (!isLoggedIn) { setShowLoginModal(true); return; }
+    window.location.hash = 'template-select';
+  };
 
   const handleTemplateConfirm = () => {
     if (pickedTemplate) saveSelectedTemplate(pickedTemplate);
@@ -830,6 +834,84 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
                 }}
               >
                 이력서 업로드하기 →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Login required modal ── */}
+      {showLoginModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowLoginModal(false); }}
+        >
+          <div style={{
+            background: '#fff',
+            borderRadius: 16,
+            width: '100%',
+            maxWidth: 400,
+            padding: '36px 32px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          }}>
+            <div style={{
+              width: 48, height: 48,
+              borderRadius: 12,
+              background: '#F4F4F5',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 20,
+              fontSize: 22,
+            }}>🔒</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: -0.3 }}>
+              로그인이 필요해요
+            </h2>
+            <p style={{ fontSize: 14, color: '#888', lineHeight: 1.7, marginBottom: 28 }}>
+              이력서 업로드 기능은 로그인 후 사용할 수 있어요.<br />
+              GitHub 계정으로 간편하게 시작해보세요.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button
+                onClick={() => { setShowLoginModal(false); handleGitHubLogin(); }}
+                style={{
+                  width: '100%',
+                  padding: '13px',
+                  background: '#0A0A0A',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                GitHub으로 로그인
+              </button>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'transparent',
+                  color: '#999',
+                  border: '1px solid #E8E8E8',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                취소
               </button>
             </div>
           </div>
