@@ -9,6 +9,7 @@ export default function Navbar() {
   const [currentHash, setCurrentHash] = useState(window.location.hash);
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!sessionStorage.getItem('access_token'));
+  const isAdmin = sessionStorage.getItem('is_admin') === 'true';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -53,9 +54,22 @@ export default function Navbar() {
           </a>
         </div>
         {isLoggedIn ? (
-          <button className={styles.ctaButton} onClick={() => { window.location.hash = '#mypage'; }}>
-            마이페이지
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isAdmin && (
+              <button
+                onClick={() => { window.location.hash = '#admin'; }}
+                style={{
+                  padding: '8px 16px', fontSize: 12, fontWeight: 700,
+                  background: '#0A0A0A', color: '#fff',
+                  border: 'none', cursor: 'pointer', borderRadius: 6,
+                  fontFamily: 'var(--font-mono)', letterSpacing: 1,
+                }}
+              >ADMIN</button>
+            )}
+            <button className={styles.ctaButton} onClick={() => { window.location.hash = '#mypage'; }}>
+              마이페이지
+            </button>
+          </div>
         ) : (
           <button className={styles.ctaButton} onClick={() => setModalOpen(true)}>
             시작하기
