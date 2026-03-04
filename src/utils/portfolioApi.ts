@@ -189,6 +189,24 @@ export async function submitTemplate(payload: {
   }
 }
 
+/** 포트폴리오 수정 */
+export async function updatePortfolioOnServer(id: string, payload: {
+  title: string;
+  templateId: string;
+  data: PortfolioData;
+}): Promise<{ success: boolean; portfolio?: SavedPortfolio; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return await res.json();
+  } catch {
+    return { success: false, message: '서버 연결에 실패했습니다.' };
+  }
+}
+
 /** 포트폴리오 삭제 */
 export async function deletePortfolioFromServer(id: string): Promise<{ success: boolean; message?: string }> {
   try {
