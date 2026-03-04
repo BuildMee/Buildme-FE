@@ -67,17 +67,23 @@ export default function ResumePage() {
   const STEP_LABELS = ['이력서 업로드', '기본 정보', '상세 정보', '템플릿 선택', '완성'];
   const STEP_KEYS: Step[] = ['upload', 'info', 'detail', 'template', 'done'];
 
+  const HEADER_TEXT: Record<Step, { title: string; sub: string }> = {
+    upload:    { title: '이력서 업로드',       sub: 'PDF 이력서를 올려주세요. AI가 내용을 분석해 포트폴리오 초안을 자동으로 작성합니다.' },
+    info:      { title: '기본 정보 입력',       sub: '이름, 직군 등 기본 정보를 입력해주세요. AI 분석의 방향을 잡는 데 활용됩니다.' },
+    analyzing: { title: 'AI 분석 중',           sub: '이력서를 분석해 포트폴리오 초안을 작성하고 있습니다. 잠시만 기다려주세요.' },
+    detail:    { title: '상세 정보 입력',       sub: '자기소개, 기술 스택, 주요 경험을 보완해주세요. 입력할수록 완성도가 높아져요.' },
+    template:  { title: '템플릿 선택',          sub: '포트폴리오에 적용할 디자인 템플릿을 골라주세요.' },
+    done:      { title: '포트폴리오 완성!',     sub: '이력서 기반 포트폴리오 초안이 완성됐습니다. 지금 바로 확인해보세요.' },
+  };
+
   return (
     <div className={styles.page}>
       <Navbar />
 
       <section className={styles.header}>
         <div className={styles.headerInner}>
-          <p className={styles.headerLabel}>RESUME UPLOAD</p>
-          <h1 className={styles.headerTitle}>이력서로<br />시작하기</h1>
-          <p className={styles.headerSub}>
-            이력서를 업로드하면 AI가 분석해서 포트폴리오 초안을 완성합니다.
-          </p>
+          <h1 className={styles.headerTitle}>{HEADER_TEXT[step].title}</h1>
+          <p className={styles.headerSub}>{HEADER_TEXT[step].sub}</p>
         </div>
         <div className={styles.steps}>
           {STEP_LABELS.map((s, i) => (
@@ -97,9 +103,6 @@ export default function ResumePage() {
         {/* ── Step 1: 업로드 ── */}
         {step === 'upload' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>이력서 업로드</h2>
-            <p className={styles.cardDesc}>PDF 형식의 이력서를 업로드해주세요.</p>
-
             <div
               className={`${styles.dropzone} ${dragging ? styles.dropzoneActive : ''} ${file ? styles.dropzoneDone : ''}`}
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -148,9 +151,6 @@ export default function ResumePage() {
         {/* ── Step 2: 기본 정보 ── */}
         {step === 'info' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>기본 정보 입력</h2>
-            <p className={styles.cardDesc}>AI 분석에 활용할 정보를 입력해주세요.</p>
-
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label className={styles.label}>이름 <span className={styles.req}>*</span></label>
@@ -195,20 +195,12 @@ export default function ResumePage() {
           <div className={`${styles.card} ${styles.cardCenter}`}>
             <div style={{ width: 48, height: 48, border: '3px solid #eee', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 24 }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            <h2 className={styles.cardTitle}>AI가 이력서를 분석 중이에요</h2>
-            <p className={styles.cardDesc}>PDF 텍스트 추출 후 포트폴리오 초안을 생성하고 있어요.<br />잠시만 기다려주세요.</p>
           </div>
         )}
 
         {/* ── Step 3: 상세 정보 (선택) ── */}
         {step === 'detail' && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>상세 정보 입력</h2>
-            <p className={styles.cardDesc}>
-              입력할수록 포트폴리오 완성도가 높아져요.
-              <span style={{ marginLeft: 8, fontSize: 12, color: '#aaa', fontWeight: 400 }}>선택사항</span>
-            </p>
-
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label className={styles.label}>한 줄 자기소개</label>
@@ -297,8 +289,7 @@ export default function ResumePage() {
               {/* 오른쪽: 목록 + 버튼 */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ padding: '20px 20px 0', borderBottom: '1px solid #e8e8e8', paddingBottom: 16 }}>
-                  <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 3 }}>템플릿 선택</h2>
-                  <p style={{ fontSize: 12, color: '#888' }}>포트폴리오에 적용할 템플릿을 선택하세요.</p>
+                  <p style={{ fontSize: 12, color: '#888' }}>원하는 디자인을 선택하세요.</p>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {TEMPLATES.map((t) => {

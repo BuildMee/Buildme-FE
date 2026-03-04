@@ -5,6 +5,7 @@ import { GitHubIcon, UploadIcon } from './Icons';
 import { handleGitHubLogin } from '../utils/auth';
 import { saveSelectedTemplate, saveAiDesign, TEMPLATES } from '../utils/templates';
 import Logo from './Logo';
+import LoginModal from './LoginModal';
 import styles from '../styles/MainPage.module.css';
 
 /* ===== Types ===== */
@@ -132,21 +133,28 @@ function PreviewMagazine() {
 
 /* ===== Template data ===== */
 const templates: Template[] = [
-  { id: 'minimal-dark', name: 'Minimal Dark', category: 'dark', Preview: PreviewMinimalDark },
-  { id: 'clean-white', name: 'Clean White', category: 'minimal', Preview: PreviewCleanWhite },
-  { id: 'blue-accent', name: 'Blue Accent', category: 'creative', Preview: PreviewBlueAccent },
-  { id: 'terminal', name: 'Terminal', category: 'tech', Preview: PreviewTerminal },
-  { id: 'grid', name: 'Grid', category: 'minimal', Preview: PreviewGrid },
-  { id: 'magazine', name: 'Magazine', category: 'creative', Preview: PreviewMagazine },
+  { id: 'minimal-dark', name: '미니멀 다크', category: 'dark', Preview: PreviewMinimalDark },
+  { id: 'clean-white', name: '클린 화이트', category: 'minimal', Preview: PreviewCleanWhite },
+  { id: 'blue-accent', name: '블루 엑센트', category: 'creative', Preview: PreviewBlueAccent },
+  { id: 'terminal', name: '터미널', category: 'tech', Preview: PreviewTerminal },
+  { id: 'grid', name: '그리드', category: 'minimal', Preview: PreviewGrid },
+  { id: 'magazine', name: '매거진', category: 'creative', Preview: PreviewMagazine },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
-  { label: 'ALL', value: 'all' },
-  { label: 'MINIMAL', value: 'minimal' },
-  { label: 'DARK', value: 'dark' },
-  { label: 'CREATIVE', value: 'creative' },
-  { label: 'TECH', value: 'tech' },
+  { label: '전체', value: 'all' },
+  { label: '미니멀', value: 'minimal' },
+  { label: '다크', value: 'dark' },
+  { label: '크리에이티브', value: 'creative' },
+  { label: '테크', value: 'tech' },
 ];
+
+const CATEGORY_KO: Record<string, string> = {
+  minimal: '미니멀',
+  dark: '다크',
+  creative: '크리에이티브',
+  tech: '테크',
+};
 
 const STAGGER: Record<number, string> = {
   0: styles.stagger0,
@@ -283,7 +291,7 @@ export default function MainPage() {
 
       {/* ===== Template Gallery ===== */}
       <section className={styles.gallery}>
-        <h2 className={styles.sectionTitle}>Templates</h2>
+        <h2 className={styles.sectionTitle}>템플릿</h2>
 
         <div className={styles.filterTabs}>
           {CATEGORIES.map((cat) => (
@@ -308,15 +316,15 @@ export default function MainPage() {
               className={`${styles.templateCard} ${visibleCards.has(tpl.id) ? styles.cardVisible : ''} ${STAGGER[idx] ?? ''}`}
             >
               <tpl.Preview />
-              <div className={styles.cardOverlay} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }} style={{ cursor: 'pointer' }}>
+              <div className={styles.cardOverlay} onClick={() => { if (!isLoggedIn) { setShowLoginModal(true); return; } saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }} style={{ cursor: 'pointer' }}>
                 <span className={styles.overlayText}>템플릿 사용하기</span>
               </div>
               <div className={styles.cardFooter}>
                 <div>
                   <div className={styles.cardName}>{tpl.name}</div>
-                  <div className={styles.cardCategory}>{tpl.category}</div>
+                  <div className={styles.cardCategory}>{CATEGORY_KO[tpl.category] ?? tpl.category}</div>
                 </div>
-                <button className={styles.useBtn} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
+                <button className={styles.useBtn} onClick={() => { if (!isLoggedIn) { setShowLoginModal(true); return; } saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
               </div>
             </div>
           ))}
@@ -326,7 +334,7 @@ export default function MainPage() {
       {/* ===== AI Custom Section ===== */}
       <section className={styles.aiSection}>
         <div className={styles.aiInner}>
-          <span className={styles.aiLabel}>AI CUSTOM DESIGN</span>
+          <span className={styles.aiLabel}>AI 커스텀 디자인</span>
           <h2 className={styles.aiHeadline}>나만의 디자인을 만들어보세요.</h2>
           <p className={styles.aiDesc}>
             원하는 스타일을 설명하면 AI가 맞춤 디자인을 생성합니다. 컬러, 레이아웃, 분위기 모두 자유롭게.
@@ -841,82 +849,7 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
       )}
 
       {/* ── Login required modal ── */}
-      {showLoginModal && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.45)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '24px',
-          }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowLoginModal(false); }}
-        >
-          <div style={{
-            background: '#fff',
-            borderRadius: 16,
-            width: '100%',
-            maxWidth: 400,
-            padding: '36px 32px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-          }}>
-            <div style={{
-              width: 48, height: 48,
-              borderRadius: 12,
-              background: '#F4F4F5',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 20,
-              fontSize: 22,
-            }}>🔒</div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: -0.3 }}>
-              로그인이 필요해요
-            </h2>
-            <p style={{ fontSize: 14, color: '#888', lineHeight: 1.7, marginBottom: 28 }}>
-              이력서 업로드 기능은 로그인 후 사용할 수 있어요.<br />
-              GitHub 계정으로 간편하게 시작해보세요.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                onClick={() => { setShowLoginModal(false); handleGitHubLogin(); }}
-                style={{
-                  width: '100%',
-                  padding: '13px',
-                  background: '#0A0A0A',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-                </svg>
-                GitHub으로 로그인
-              </button>
-              <button
-                onClick={() => setShowLoginModal(false)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'transparent',
-                  color: '#999',
-                  border: '1px solid #E8E8E8',
-                  borderRadius: 10,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                }}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </div>
   );
 }

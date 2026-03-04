@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/TemplatesPage.module.css';
 import { saveSelectedTemplate } from '../utils/templates';
+import LoginModal from './LoginModal';
 
 type Category = 'all' | 'minimal' | 'dark' | 'creative' | 'tech';
 type SortKey = 'popular' | 'newest';
@@ -141,24 +142,31 @@ function PreviewCinematic() {
 /* ── Data ── */
 
 const communityTemplates: CommunityTemplate[] = [
-  { id: 'neo', name: 'Neo Brutalist', category: 'minimal', author: 'oh_minsu', likes: 1240, component: <PreviewNeo /> },
-  { id: 'hacker', name: 'Hacker Mode', category: 'tech', author: 'jung_minho', likes: 893, component: <PreviewHacker /> },
-  { id: 'blueprint', name: 'Blueprint', category: 'tech', author: 'kimjaeho', likes: 671, component: <PreviewBlueprint /> },
-  { id: 'editorial', name: 'Editorial', category: 'creative', author: 'leesoojin', likes: 458, isNew: true, component: <PreviewEditorial /> },
-  { id: 'neon', name: 'Neon Dark', category: 'dark', author: 'park_jy', likes: 344, isNew: true, component: <PreviewNeon /> },
-  { id: 'retro', name: 'Retro Terminal', category: 'tech', author: 'choi_dev', likes: 289, component: <PreviewRetro /> },
-  { id: 'mono', name: 'Monochrome', category: 'minimal', author: 'han_jun', likes: 201, isPro: true, component: <PreviewMono /> },
-  { id: 'split', name: 'Split Layout', category: 'creative', author: 'yoon_seri', likes: 178, isNew: true, isPro: true, component: <PreviewSplit /> },
-  { id: 'cinematic', name: 'Cinematic', category: 'dark', author: 'ryu_dh', likes: 143, isPro: true, component: <PreviewCinematic /> },
+  { id: 'neo', name: '네오 브루탈', category: 'minimal', author: 'oh_minsu', likes: 1240, component: <PreviewNeo /> },
+  { id: 'hacker', name: '해커 모드', category: 'tech', author: 'jung_minho', likes: 893, component: <PreviewHacker /> },
+  { id: 'blueprint', name: '블루프린트', category: 'tech', author: 'kimjaeho', likes: 671, component: <PreviewBlueprint /> },
+  { id: 'editorial', name: '에디토리얼', category: 'creative', author: 'leesoojin', likes: 458, isNew: true, component: <PreviewEditorial /> },
+  { id: 'neon', name: '네온 다크', category: 'dark', author: 'park_jy', likes: 344, isNew: true, component: <PreviewNeon /> },
+  { id: 'retro', name: '레트로 터미널', category: 'tech', author: 'choi_dev', likes: 289, component: <PreviewRetro /> },
+  { id: 'mono', name: '모노크롬', category: 'minimal', author: 'han_jun', likes: 201, isPro: true, component: <PreviewMono /> },
+  { id: 'split', name: '스플릿 레이아웃', category: 'creative', author: 'yoon_seri', likes: 178, isNew: true, isPro: true, component: <PreviewSplit /> },
+  { id: 'cinematic', name: '시네마틱', category: 'dark', author: 'ryu_dh', likes: 143, isPro: true, component: <PreviewCinematic /> },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
-  { label: 'ALL', value: 'all' },
-  { label: 'MINIMAL', value: 'minimal' },
-  { label: 'DARK', value: 'dark' },
-  { label: 'CREATIVE', value: 'creative' },
-  { label: 'TECH', value: 'tech' },
+  { label: '전체', value: 'all' },
+  { label: '미니멀', value: 'minimal' },
+  { label: '다크', value: 'dark' },
+  { label: '크리에이티브', value: 'creative' },
+  { label: '테크', value: 'tech' },
 ];
+
+const CATEGORY_KO: Record<string, string> = {
+  minimal: '미니멀',
+  dark: '다크',
+  creative: '크리에이티브',
+  tech: '테크',
+};
 
 const STAGGER: Record<number, string> = {
   0: styles.stagger0, 1: styles.stagger1, 2: styles.stagger2,
@@ -197,7 +205,16 @@ export default function TemplatesPage() {
     const initial = loadLiked();
     return Object.fromEntries(communityTemplates.map((t) => [t.id, t.likes + (initial.has(t.id) ? 1 : 0)]));
   });
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const gridRef = useRef<HTMLDivElement | null>(null);
+
+  const isLoggedIn = !!sessionStorage.getItem('access_token');
+
+  const handleUseTemplate = (id: string) => {
+    if (!isLoggedIn) { setShowLoginModal(true); return; }
+    saveSelectedTemplate(id);
+    window.location.hash = 'resume';
+  };
 
   const handleLike = (id: string) => {
     const isLoggedIn = !!sessionStorage.getItem('access_token');
@@ -313,7 +330,7 @@ export default function TemplatesPage() {
             className={`${styles.card} ${visibleCards.has(tpl.id) ? styles.cardVisible : ''} ${STAGGER[idx] ?? ''}`}
           >
             <div className={styles.previewWrapper}>
-              {tpl.isNew && !tpl.isPro && <div className={styles.newBadge}>NEW</div>}
+              {tpl.isNew && !tpl.isPro && <div className={styles.newBadge}>신규</div>}
               {tpl.isPro && <div className={styles.proLockBadge}><MiniLockIcon /></div>}
               {tpl.component}
               <div
@@ -331,7 +348,7 @@ export default function TemplatesPage() {
               <div className={styles.cardMeta}>
                 <div className={styles.cardName}>{tpl.name}</div>
                 <div className={styles.cardAuthor}>@{tpl.author}</div>
-                <div className={styles.cardCategory}>{tpl.category}</div>
+                <div className={styles.cardCategory}>{CATEGORY_KO[tpl.category] ?? tpl.category}</div>
               </div>
               <div className={styles.cardActions}>
                 <button
@@ -345,7 +362,7 @@ export default function TemplatesPage() {
                   className={`${styles.useBtn} ${tpl.isPro ? styles.useBtnPro : ''}`}
                   onClick={() => {
                     if (tpl.isPro) { window.location.hash = 'pricing'; }
-                    else { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }
+                    else { handleUseTemplate(tpl.id); }
                   }}
                 >
                   {tpl.isPro ? 'Pro 전용' : '사용하기'}
@@ -368,11 +385,14 @@ export default function TemplatesPage() {
               다른 개발자들이 당신의 작업을 발전시킵니다.
             </p>
           </div>
-          <a href="#submit" className={styles.contributeCta}>SUBMIT YOUR TEMPLATE →</a>
+          <a href="#submit" className={styles.contributeCta}>템플릿 제출하기 →</a>
         </div>
       </section>
 
       <Footer />
+
+      {/* ── Login required modal ── */}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </div>
   );
 }
