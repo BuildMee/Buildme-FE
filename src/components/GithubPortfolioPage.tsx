@@ -67,6 +67,8 @@ export default function GithubPortfolioPage() {
   const [reposLoading, setReposLoading] = useState(true);
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
   const [filterOwner, setFilterOwner] = useState<string>('all');
+  const [cardIndex, setCardIndex] = useState(0);
+  const [cardAnim, setCardAnim] = useState<'enter-right' | 'enter-left' | null>(null);
 
   const [major, setMajor] = useState('');
   const [customMajor, setCustomMajor] = useState('');
@@ -269,10 +271,9 @@ export default function GithubPortfolioPage() {
       {/* ── Page body ── */}
       <div style={{
         width: '100%',
-        padding: step === 'select' ? '36px 60px 0' : '48px 60px 100px',
+        padding: ['select','role','detail','extra'].includes(step) ? '0' : '48px 60px 100px',
         boxSizing: 'border-box',
-        background: step === 'select' ? '#F4F4F5' : 'transparent',
-        minHeight: step === 'select' ? '100vh' : undefined,
+        background: ['select','role','detail','extra'].includes(step) ? '#F7F7F8' : 'transparent',
       }}>
 
         {/* ════════════════════════════════════════
@@ -281,573 +282,457 @@ export default function GithubPortfolioPage() {
         {step === 'select' && (
           <>
             <style>{`
-              @keyframes repoCardIn {
-                from { opacity: 0; transform: translateY(8px); }
-                to   { opacity: 1; transform: translateY(0); }
-              }
-              @keyframes checkPop {
-                0%   { transform: scale(0) rotate(-8deg); }
-                65%  { transform: scale(1.12) rotate(2deg); }
-                100% { transform: scale(1) rotate(0deg); }
-              }
-              @keyframes counterPulse {
-                0%   { transform: scale(1); }
-                40%  { transform: scale(1.05); }
-                100% { transform: scale(1); }
-              }
-              @keyframes panelSlideIn {
-                from { opacity: 0; transform: translateX(12px); }
-                to   { opacity: 1; transform: translateX(0); }
-              }
               @keyframes _spin { to { transform: rotate(360deg); } }
-              .repo-item { animation: repoCardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
-              .check-icon { animation: checkPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-              .counter-num { animation: counterPulse 0.2s ease; }
-              .summary-panel { animation: panelSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+              @keyframes cardIn {
+                from { opacity: 0; transform: translateY(12px); }
+                to   { opacity: 1; transform: none; }
+              }
+              .repo-grid-card {
+                animation: cardIn 0.22s cubic-bezier(0.16,1,0.3,1) both;
+                cursor: pointer;
+                border-radius: 14px;
+                padding: 22px 24px;
+                border: 1.5px solid #EBEBEB;
+                background: #fff;
+                transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+                position: relative;
+                overflow: hidden;
+              }
+              .repo-grid-card:hover {
+                border-color: #D0D0D0;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+              }
+              .repo-grid-card.selected {
+                border-color: #0A0A0A;
+                background: #FAFAFA;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+              }
+              .repo-grid-card.disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+              }
             `}</style>
 
-            <div style={{
-              display: 'flex',
-              gap: 20,
-              maxWidth: 1200,
-              margin: '0 auto',
-              paddingBottom: 100,
-            }}>
+            {/* Page layout */}
+            <div style={{ minHeight: '100vh', background: '#F7F7F8', paddingBottom: 100 }}>
 
-              {/* ── LEFT: Repo list ── */}
-              <div style={{ flex: '1 1 0', minWidth: 0 }}>
-
-                {/* Filter tabs — segmented control */}
-                {!reposLoading && repos.length > 0 && (
+              {/* Header */}
+              <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 40px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+                  {/* Filter tabs */}
                   <div style={{
-                    display: 'inline-flex',
-                    gap: 2,
-                    marginBottom: 16,
-                    background: '#EAEAEA',
-                    borderRadius: 8,
-                    padding: 3,
+                    display: 'inline-flex', gap: 2,
+                    background: '#EAEAEA', borderRadius: 10, padding: 3,
                   }}>
-                    {['all', 'user', ...orgs].map((f) => (
-                      <button
-                        key={f}
-                        onClick={() => setFilterOwner(f)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 6,
-                          fontSize: 12,
-                          cursor: 'pointer',
-                          fontFamily: 'var(--font-heading)',
-                          fontWeight: filterOwner === f ? 600 : 400,
-                          border: 'none',
-                          background: filterOwner === f ? '#FFFFFF' : 'transparent',
-                          color: filterOwner === f ? '#0A0A0A' : '#888888',
-                          transition: 'all 0.12s ease',
-                          boxShadow: filterOwner === f ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
-                          whiteSpace: 'nowrap',
-                        }}>
+                    {['all', 'user', ...orgs].map(f => (
+                      <button key={f} onClick={() => setFilterOwner(f)} style={{
+                        padding: '6px 16px', borderRadius: 8,
+                        fontSize: 13, fontWeight: filterOwner === f ? 600 : 400,
+                        border: 'none', cursor: 'pointer',
+                        background: filterOwner === f ? '#fff' : 'transparent',
+                        color: filterOwner === f ? '#0A0A0A' : '#888',
+                        boxShadow: filterOwner === f ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                        transition: 'all 0.15s',
+                        whiteSpace: 'nowrap',
+                      }}>
                         {f === 'all' ? '전체' : f === 'user' ? '내 레포' : f}
                       </button>
                     ))}
                   </div>
-                )}
 
-                {/* Repo cards */}
+                  {/* Selected count */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {[1,2,3,4,5].map(n => (
+                        <div key={n} style={{
+                          width: 20, height: 4, borderRadius: 2,
+                          background: n <= selectedRepos.size ? '#0A0A0A' : '#E0E0E0',
+                          transition: 'background 0.2s',
+                        }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 13, color: '#888', fontFamily: 'var(--font-mono)' }}>
+                      {selectedRepos.size} / 5
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 40px' }}>
                 {reposLoading ? (
-                  <div style={{
-                    padding: '80px 0',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 16,
-                  }}>
-                    <div style={{
-                      width: 26,
-                      height: 26,
-                      border: '2px solid #D8D8D8',
-                      borderTopColor: '#0A0A0A',
-                      borderRadius: '50%',
-                      animation: '_spin 0.8s linear infinite',
-                    }} />
-                    <span style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
-                      color: '#BBBBBB',
-                      letterSpacing: 1.5,
-                    }}>불러오는 중...</span>
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+                    <div style={{ width: 28, height: 28, border: '2px solid #E0E0E0', borderTopColor: '#0A0A0A', borderRadius: '50%', animation: '_spin 0.8s linear infinite' }} />
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: 12,
+                  }}>
                     {repos
-                      .filter((r) => filterOwner === 'all' || r.owner === filterOwner)
+                      .filter(r => filterOwner === 'all' || r.owner === filterOwner)
                       .map((r, idx) => {
                         const selected = selectedRepos.has(r.fullName);
                         const maxReached = selectedRepos.size >= 5 && !selected;
-                        const isHovered = hoveredRepo === r.id && !maxReached;
-                        const langColor = LANG_COLORS[r.language ?? ''] ?? '#888';
+                        const langColor = LANG_COLORS[r.language ?? ''] ?? '#999';
 
                         return (
                           <div
                             key={r.id}
-                            className="repo-item"
-                            onMouseEnter={() => !maxReached && setHoveredRepo(r.id)}
-                            onMouseLeave={() => setHoveredRepo(null)}
+                            className={`repo-grid-card${selected ? ' selected' : ''}${maxReached ? ' disabled' : ''}`}
+                            style={{ animationDelay: `${Math.min(idx * 20, 200)}ms` }}
                             onClick={() => !maxReached && toggleRepo(r.fullName)}
-                            style={{
-                              animationDelay: `${Math.min(idx * 28, 280)}ms`,
-                              padding: '13px 16px',
-                              border: selected
-                                ? '1px solid #0A0A0A'
-                                : isHovered
-                                  ? '1px solid #C0C0C0'
-                                  : '1px solid #E4E4E4',
-                              borderRadius: 8,
-                              cursor: maxReached ? 'not-allowed' : 'pointer',
-                              background: selected ? '#FFFFFF' : isHovered ? '#FFFFFF' : '#FAFAFA',
-                              boxShadow: selected
-                                ? '0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)'
-                                : isHovered
-                                  ? '0 1px 6px rgba(0,0,0,0.06)'
-                                  : 'none',
-                              transition: 'all 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
-                              opacity: maxReached ? 0.28 : 1,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 12,
-                              position: 'relative',
-                              overflow: 'hidden',
-                            }}
                           >
-                            {/* Left accent bar */}
+                            {/* Language color bar */}
                             <div style={{
-                              position: 'absolute',
-                              left: 0, top: 0, bottom: 0,
-                              width: selected ? 2 : 0,
-                              background: '#0A0A0A',
-                              transition: 'width 0.16s ease',
+                              position: 'absolute', top: 0, left: 0, right: 0,
+                              height: 3, borderRadius: '14px 14px 0 0',
+                              background: selected ? langColor : 'transparent',
+                              transition: 'background 0.18s',
                             }} />
 
-                            {/* Content */}
-                            <div style={{
-                              flex: 1,
-                              paddingLeft: selected ? 8 : 0,
-                              minWidth: 0,
-                              transition: 'padding 0.16s ease',
-                            }}>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 7,
-                                marginBottom: 3,
-                                flexWrap: 'wrap',
-                              }}>
-                                <span style={{
-                                  fontFamily: 'var(--font-heading)',
-                                  fontWeight: 600,
-                                  fontSize: 13.5,
-                                  color: '#0A0A0A',
-                                  letterSpacing: -0.3,
-                                }}>
-                                  {r.name}
-                                </span>
-
-                                {r.language && (
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                {/* Name */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
                                   <span style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    fontSize: 11,
-                                    padding: '1px 7px',
-                                    background: '#EFEFEF',
-                                    borderRadius: 4,
-                                    color: '#555',
-                                    fontFamily: 'var(--font-mono)',
-                                    letterSpacing: 0.1,
-                                  }}>
+                                    fontSize: 15, fontWeight: 700,
+                                    color: '#0A0A0A', letterSpacing: -0.3,
+                                    fontFamily: 'var(--font-heading)',
+                                  }}>{r.name}</span>
+                                  {r.owner !== 'user' && (
                                     <span style={{
-                                      width: 6, height: 6,
-                                      borderRadius: '50%',
-                                      background: langColor,
-                                      flexShrink: 0,
-                                    }} />
-                                    {r.language}
-                                  </span>
-                                )}
+                                      fontSize: 11, color: '#AAA',
+                                      background: '#F0F0F0', padding: '2px 8px',
+                                      borderRadius: 4, fontFamily: 'var(--font-mono)',
+                                    }}>{r.owner}</span>
+                                  )}
+                                </div>
 
-                                {r.owner !== 'user' && (
-                                  <span style={{
-                                    fontSize: 11,
-                                    padding: '1px 7px',
-                                    background: '#EFEFEF',
-                                    borderRadius: 4,
-                                    color: '#999',
-                                    fontFamily: 'var(--font-mono)',
-                                    letterSpacing: 0.1,
-                                  }}>
-                                    {r.owner}
-                                  </span>
-                                )}
+                                {/* Description */}
+                                <p style={{
+                                  fontSize: 13, color: '#888', lineHeight: 1.55,
+                                  margin: '0 0 14px',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical' as const,
+                                  overflow: 'hidden',
+                                }}>{r.description ?? '설명 없음'}</p>
+
+                                {/* Footer */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                  {r.language && (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#666' }}>
+                                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: langColor, flexShrink: 0 }} />
+                                      {r.language}
+                                    </span>
+                                  )}
+                                  {r.stars > 0 && (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#AAA' }}>
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="#CCC"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                      {r.stars}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
 
-                              <p style={{
-                                fontSize: 12,
-                                color: '#9A9A9A',
-                                lineHeight: 1.4,
-                                fontFamily: 'var(--font-heading)',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                margin: 0,
-                              }}>
-                                {r.description ?? '설명 없음'}
-                              </p>
-                            </div>
-
-                            {/* Checkbox — square for precision */}
-                            <div
-                              className={selected ? 'check-icon' : ''}
-                              style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: 5,
+                              {/* Checkbox */}
+                              <div style={{
+                                width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 2,
                                 background: selected ? '#0A0A0A' : 'transparent',
-                                border: selected ? 'none' : `1.5px solid ${isHovered ? '#BBBBBB' : '#DEDEDE'}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                                transition: 'all 0.14s',
-                              }}
-                            >
-                              {selected && (
-                                <svg width="10" height="7" viewBox="0 0 10 7" fill="none">
-                                  <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              )}
+                                border: selected ? 'none' : '1.5px solid #D8D8D8',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all 0.15s',
+                              }}>
+                                {selected && (
+                                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                                    <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
                       })}
                   </div>
                 )}
+              </div>
+            </div>
 
-                {/* Max reached notice */}
-                {selectedRepos.size >= 5 && (
-                  <div style={{
-                    marginTop: 10,
-                    padding: '9px 14px',
-                    background: '#FFFBEB',
-                    border: '1px solid #EED97A',
-                    borderRadius: 6,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}>
-                    <span style={{ fontSize: 13 }}>⚠</span>
-                    <p style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
-                      color: '#7A5800',
-                      margin: 0,
-                    }}>최대 5개까지 선택 가능합니다.</p>
-                  </div>
+            {/* Bottom fixed CTA */}
+            <div style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+              background: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderTop: '1px solid #EBEBEB',
+              padding: '16px 40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {selectedRepos.size === 0 ? (
+                  <span style={{ fontSize: 14, color: '#BBB' }}>레포지토리를 선택해주세요</span>
+                ) : (
+                  Array.from(selectedRepos).map(fn => {
+                    const repo = repos.find(r => r.fullName === fn);
+                    const lang = repo?.language;
+                    return (
+                      <div key={fn} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '5px 10px 5px 8px',
+                        background: '#F2F2F2', borderRadius: 20,
+                        fontSize: 12, color: '#333', fontWeight: 500,
+                      }}>
+                        {lang && <span style={{ width: 7, height: 7, borderRadius: '50%', background: LANG_COLORS[lang] ?? '#999' }} />}
+                        {repo?.name ?? fn.split('/')[1]}
+                        <button onClick={(e) => { e.stopPropagation(); toggleRepo(fn); }} style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: '#AAA', fontSize: 14, lineHeight: 1, padding: 0, marginLeft: 2,
+                        }}>×</button>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
-              {/* ── RIGHT: Control panel ── */}
-              <div className="summary-panel" style={{ width: 268, flexShrink: 0 }}>
-                <div style={{ position: 'sticky', top: 24 }}>
-
-                  {/* Dark header — count */}
-                  <div style={{
-                    background: '#0A0A0A',
-                    borderRadius: '10px 10px 0 0',
-                    padding: '22px 20px 18px',
-                  }}>
-                    <p style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 9,
-                      letterSpacing: 2.5,
-                      color: '#505050',
-                      marginBottom: 10,
-                      textTransform: 'uppercase',
-                    }}>선택된 레포</p>
-
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 14 }}>
-                      <span
-                        key={selectedRepos.size}
-                        className="counter-num"
-                        style={{
-                          fontFamily: 'var(--font-display)',
-                          fontSize: 68,
-                          color: selectedRepos.size > 0 ? '#FFFFFF' : '#242424',
-                          lineHeight: 1,
-                          transition: 'color 0.25s',
-                        }}
-                      >{selectedRepos.size}</span>
-                      <span style={{
-                        fontFamily: 'var(--font-display)',
-                        fontSize: 30,
-                        color: '#303030',
-                        lineHeight: 1,
-                      }}>/ 5</span>
-                    </div>
-
-                    {/* 5-segment bar */}
-                    <div style={{ display: 'flex', gap: 3 }}>
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <div key={n} style={{
-                          flex: 1,
-                          height: 2,
-                          borderRadius: 1,
-                          background: n <= selectedRepos.size ? '#FFFFFF' : '#1E1E1E',
-                          transition: 'background 0.2s ease',
-                        }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Selected list */}
-                  <div style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E4E4E4',
-                    borderTop: 'none',
-                    minHeight: 72,
-                    padding: '12px 16px',
-                  }}>
-                    {selectedRepos.size === 0 ? (
-                      <p style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: 12,
-                        color: '#C4C4C4',
-                        lineHeight: 1.65,
-                        textAlign: 'center',
-                        padding: '10px 0',
-                        margin: 0,
-                      }}>왼쪽 목록에서 레포를 선택하세요.</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {Array.from(selectedRepos).map((fullName) => {
-                          const repo = repos.find(r => r.fullName === fullName);
-                          return (
-                            <div key={fullName} style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '7px 10px',
-                              background: '#F6F6F6',
-                              borderRadius: 6,
-                              border: '1px solid #EEEEEE',
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
-                                <div style={{
-                                  width: 4, height: 4,
-                                  borderRadius: '50%',
-                                  background: '#0A0A0A',
-                                  flexShrink: 0,
-                                }} />
-                                <span style={{
-                                  fontFamily: 'var(--font-heading)',
-                                  fontSize: 12,
-                                  color: '#1A1A1A',
-                                  fontWeight: 500,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}>
-                                  {repo?.name ?? fullName.split('/')[1]}
-                                </span>
-                              </div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); toggleRepo(fullName); }}
-                                style={{
-                                  color: '#C8C8C8',
-                                  fontSize: 15,
-                                  cursor: 'pointer',
-                                  padding: '0 2px',
-                                  lineHeight: 1,
-                                  flexShrink: 0,
-                                  transition: 'color 0.12s',
-                                  background: 'transparent',
-                                  border: 'none',
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.color = '#0A0A0A')}
-                                onMouseLeave={e => (e.currentTarget.style.color = '#C8C8C8')}
-                              >×</button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CTA */}
-                  <button
-                    disabled={selectedRepos.size === 0}
-                    onClick={() => setStep('role')}
-                    style={{
-                      width: '100%',
-                      padding: '13px',
-                      background: selectedRepos.size > 0 ? '#0A0A0A' : '#EBEBEB',
-                      color: selectedRepos.size > 0 ? '#FFFFFF' : '#BBBBBB',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: 1.5,
-                      border: 'none',
-                      borderRadius: '0 0 10px 10px',
-                      cursor: selectedRepos.size > 0 ? 'pointer' : 'not-allowed',
-                      transition: 'background 0.15s ease',
-                      textTransform: 'uppercase',
-                    }}
-                    onMouseEnter={e => { if (selectedRepos.size > 0) e.currentTarget.style.background = '#1C1C1C'; }}
-                    onMouseLeave={e => { if (selectedRepos.size > 0) e.currentTarget.style.background = '#0A0A0A'; }}
-                  >
-                    {selectedRepos.size > 0 ? '다음 단계 →' : '레포를 먼저 선택하세요'}
-                  </button>
-
-                  {/* Info note */}
-                  <p style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 11,
-                    color: '#BBBBBB',
-                    lineHeight: 1.7,
-                    marginTop: 14,
-                    paddingLeft: 2,
-                  }}>
-                    ✦ AI가 코드 패턴, 기술 스택, 프로젝트 규모를 분석해 맞춤형 포트폴리오를 생성합니다.
-                  </p>
-                </div>
-              </div>
-
+              <button
+                disabled={selectedRepos.size === 0}
+                onClick={() => setStep('role')}
+                style={{
+                  padding: '11px 28px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 700,
+                  border: 'none', cursor: selectedRepos.size === 0 ? 'not-allowed' : 'pointer',
+                  background: selectedRepos.size > 0 ? '#0A0A0A' : '#E8E8E8',
+                  color: selectedRepos.size > 0 ? '#fff' : '#BBB',
+                  transition: 'all 0.2s',
+                }}
+              >
+                다음 단계 →
+              </button>
             </div>
           </>
         )}
 
         {/* ── Step 2: 직군 선택 ── */}
         {step === 'role' && (
-          <div className={styles.card}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
-              {ROLES.map((r) => (
-                <button key={r} onClick={() => setMajor(r)} style={{
-                  padding: '12px 22px', borderRadius: 10, fontSize: 15, cursor: 'pointer',
-                  border: major === r ? '2px solid #000' : '2px solid #e8e8e8',
-                  background: major === r ? '#000' : '#fff',
-                  color: major === r ? '#fff' : '#333',
-                  fontWeight: major === r ? 700 : 400,
-                  transition: 'all 0.15s',
-                }}>{r}</button>
-              ))}
+          <>
+            <style>{`
+              .role-chip {
+                padding: 14px 24px;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                border: 1.5px solid #EBEBEB;
+                background: #fff;
+                color: #333;
+                transition: all 0.15s;
+                font-family: var(--font-heading);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+                white-space: nowrap;
+              }
+              .role-chip:hover {
+                border-color: #C8C8C8;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+              }
+              .role-chip.selected {
+                border-color: transparent;
+                background: #0A0A0A;
+                color: #fff;
+                font-weight: 700;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+              }
+            `}</style>
+
+            <div style={{ minHeight: '70vh', background: '#F7F7F8', paddingBottom: 120 }}>
+              <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 40px 0' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                  {ROLES.map((r) => (
+                    <button
+                      key={r}
+                      className={`role-chip${major === r ? ' selected' : ''}`}
+                      onClick={() => setMajor(r)}
+                    >{r}</button>
+                  ))}
+                </div>
+
+                {major === '기타' && (
+                  <input
+                    value={customMajor}
+                    onChange={(e) => setCustomMajor(e.target.value)}
+                    placeholder="직군/역할 직접 입력 (예: 임베디드 개발자)"
+                    style={{
+                      width: '100%', marginTop: 20,
+                      padding: '14px 16px', border: '1.5px solid #EBEBEB',
+                      borderRadius: 12, fontSize: 14, background: '#fff',
+                      boxSizing: 'border-box', outline: 'none',
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
-            {major === '기타' && (
-              <input
-                value={customMajor}
-                onChange={(e) => setCustomMajor(e.target.value)}
-                placeholder="직군/역할 직접 입력 (예: 임베디드 개발자)"
-                style={{ width: '100%', padding: '12px 16px', border: '2px solid #e8e8e8', borderRadius: 8, fontSize: 14, marginBottom: 24, boxSizing: 'border-box' }}
-              />
-            )}
-
-            <div className={styles.actions}>
-              <button className={styles.cancelBtn} onClick={() => setStep('select')}>← 이전</button>
+            {/* Bottom fixed CTA */}
+            <div style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+              background: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderTop: '1px solid #EBEBEB',
+              padding: '16px 40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
               <button
-                className={`${styles.nextBtn} ${!major ? styles.nextBtnDisabled : ''}`}
+                onClick={() => setStep('select')}
+                style={{
+                  padding: '11px 22px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 500,
+                  border: '1.5px solid #E0E0E0', background: 'transparent',
+                  color: '#555', cursor: 'pointer',
+                }}
+              >
+                ← 이전
+              </button>
+              <button
                 disabled={!major}
                 onClick={() => setStep('detail')}
+                style={{
+                  padding: '11px 28px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 700,
+                  border: 'none', cursor: !major ? 'not-allowed' : 'pointer',
+                  background: major ? '#0A0A0A' : '#E8E8E8',
+                  color: major ? '#fff' : '#BBB',
+                  transition: 'all 0.2s',
+                }}
               >
-                다음 →
+                다음 단계 →
               </button>
             </div>
-          </div>
+          </>
         )}
 
         {/* ── Step 3: 프로젝트 상세 ── */}
         {step === 'detail' && (
-          <div className={styles.card}>
-            {error && <p style={{ color: 'red', marginBottom: 16, fontSize: 14 }}>{error}</p>}
-
-            <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>프로젝트별 상세 정보</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
-              {Array.from(selectedRepos).map((fullName) => {
-                const repo = repos.find((r) => r.fullName === fullName);
-                const detail = repoDetails[fullName] ?? { role: '', highlights: '' };
-                return (
-                  <div key={fullName} style={{ padding: 20, border: '2px solid #e8e8e8', borderRadius: 12, background: '#fafafa' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                      <span style={{ fontWeight: 700, fontSize: 15 }}>{repo?.name ?? fullName}</span>
-                      {repo?.owner !== 'user' && (
-                        <span style={{ fontSize: 11, padding: '2px 8px', background: '#f0f0f0', borderRadius: 10, color: '#666' }}>{repo?.owner}</span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <div>
-                        <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 4 }}>내가 한 역할 / 기여</label>
-                        <input
-                          value={detail.role}
-                          onChange={(e) => updateRepoDetail(fullName, 'role', e.target.value)}
-                          placeholder="예: 프론트엔드 전체 개발, 로그인 기능 구현"
-                          style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e0e0', borderRadius: 8, fontSize: 14, background: '#fff', boxSizing: 'border-box' }}
-                        />
+          <>
+            <div style={{ minHeight: '70vh', background: '#F7F7F8', paddingBottom: 120 }}>
+              <div style={{ maxWidth: 960, margin: '0 auto', padding: '48px 40px 0' }}>
+                {error && <p style={{ color: 'red', marginBottom: 16, fontSize: 14 }}>{error}</p>}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {Array.from(selectedRepos).map((fullName) => {
+                    const repo = repos.find((r) => r.fullName === fullName);
+                    const detail = repoDetails[fullName] ?? { role: '', highlights: '' };
+                    return (
+                      <div key={fullName} style={{
+                        background: '#fff',
+                        borderRadius: 14,
+                        border: '1.5px solid #EBEBEB',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{ padding: '18px 24px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-heading)' }}>{repo?.name ?? fullName}</span>
+                          {repo?.owner !== 'user' && (
+                            <span style={{ fontSize: 11, padding: '2px 8px', background: '#F0F0F0', borderRadius: 4, color: '#888', fontFamily: 'var(--font-mono)' }}>{repo?.owner}</span>
+                          )}
+                        </div>
+                        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          <div>
+                            <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 6, fontWeight: 500 }}>내가 한 역할 / 기여</label>
+                            <input
+                              value={detail.role}
+                              onChange={(e) => updateRepoDetail(fullName, 'role', e.target.value)}
+                              placeholder="예: 프론트엔드 전체 개발, 로그인 기능 구현"
+                              style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', boxSizing: 'border-box', outline: 'none' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 6, fontWeight: 500 }}>특징 / AI에게 알려줄 것</label>
+                            <textarea
+                              value={detail.highlights}
+                              onChange={(e) => updateRepoDetail(fullName, 'highlights', e.target.value)}
+                              placeholder="예: 실시간 채팅 기능, 성능 최적화로 로딩 속도 30% 개선, 팀 프로젝트에서 PM 역할"
+                              rows={3}
+                              style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 4 }}>특징 / AI에게 알려줄 것</label>
-                        <textarea
-                          value={detail.highlights}
-                          onChange={(e) => updateRepoDetail(fullName, 'highlights', e.target.value)}
-                          placeholder="예: 실시간 채팅 기능, 성능 최적화로 로딩 속도 30% 개선, 팀 프로젝트에서 PM 역할"
-                          rows={3}
-                          style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e0e0', borderRadius: 8, fontSize: 14, background: '#fff', resize: 'vertical', boxSizing: 'border-box' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            <div className={styles.actions}>
-              <button className={styles.cancelBtn} onClick={() => setStep('role')}>← 이전</button>
-              <button className={styles.nextBtn} onClick={() => setStep('extra')}>
-                다음 →
+            {/* Bottom fixed CTA */}
+            <div style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+              background: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderTop: '1px solid #EBEBEB',
+              padding: '16px 40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <button onClick={() => setStep('role')} style={{ padding: '11px 22px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1.5px solid #E0E0E0', background: 'transparent', color: '#555', cursor: 'pointer' }}>
+                ← 이전
+              </button>
+              <button onClick={() => setStep('extra')} style={{ padding: '11px 28px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', background: '#0A0A0A', color: '#fff', transition: 'all 0.2s' }}>
+                다음 단계 →
               </button>
             </div>
-          </div>
+          </>
         )}
 
         {/* ── Step 4: 추가 정보 ── */}
         {step === 'extra' && (
-          <div className={styles.card}>
-            <div className={styles.fields}>
-              {[
-                { key: 'awards', label: '수상 내역', placeholder: '예: 2024 해커톤 대상, 교내 알고리즘 경진대회 1위' },
-                { key: 'certifications', label: '자격증 / 수료', placeholder: '예: 정보처리기사, AWS Solutions Architect, Coursera ML 수료' },
-                { key: 'activities', label: '대외 활동 / 기여', placeholder: '예: 오픈소스 기여 (React 이슈 해결), 개발 동아리 운영, 기술 블로그 운영' },
-                { key: 'additional', label: '강조하고 싶은 점', placeholder: '이력서나 레포에 담기 어려운 경험, 특기사항, 목표 등 자유롭게 작성하세요.' },
-              ].map(({ key, label, placeholder }) => (
-                <div key={key} className={styles.field}>
-                  <label className={styles.label}>{label}</label>
-                  <textarea
-                    className={styles.input}
-                    value={extraInfo[key as keyof typeof extraInfo]}
-                    onChange={(e) => setExtraInfo(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    rows={3}
-                    style={{ resize: 'vertical', minHeight: 72 }}
-                  />
+          <>
+            <div style={{ minHeight: '70vh', background: '#F7F7F8', paddingBottom: 120 }}>
+              <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 40px 0' }}>
+                <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #EBEBEB', overflow: 'hidden' }}>
+                  {[
+                    { key: 'awards', label: '수상 내역', placeholder: '예: 2024 해커톤 대상, 교내 알고리즘 경진대회 1위' },
+                    { key: 'certifications', label: '자격증 / 수료', placeholder: '예: 정보처리기사, AWS Solutions Architect, Coursera ML 수료' },
+                    { key: 'activities', label: '대외 활동 / 기여', placeholder: '예: 오픈소스 기여 (React 이슈 해결), 개발 동아리 운영, 기술 블로그 운영' },
+                    { key: 'additional', label: '강조하고 싶은 점', placeholder: '이력서나 레포에 담기 어려운 경험, 특기사항, 목표 등 자유롭게 작성하세요.' },
+                  ].map(({ key, label, placeholder }, idx, arr) => (
+                    <div key={key} style={{ padding: '20px 24px', borderBottom: idx < arr.length - 1 ? '1px solid #F0F0F0' : 'none' }}>
+                      <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 8, fontWeight: 500 }}>{label}</label>
+                      <textarea
+                        value={extraInfo[key as keyof typeof extraInfo]}
+                        onChange={(e) => setExtraInfo(prev => ({ ...prev, [key]: e.target.value }))}
+                        placeholder={placeholder}
+                        rows={3}
+                        style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, background: '#FAFAFA', resize: 'vertical', minHeight: 80, boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
 
-            <div className={styles.actions}>
-              <button className={styles.cancelBtn} onClick={() => setStep('detail')}>← 이전</button>
+            {/* Bottom fixed CTA */}
+            <div style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+              background: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderTop: '1px solid #EBEBEB',
+              padding: '16px 40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <button onClick={() => setStep('detail')} style={{ padding: '11px 22px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1.5px solid #E0E0E0', background: 'transparent', color: '#555', cursor: 'pointer' }}>
+                ← 이전
+              </button>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className={styles.cancelBtn} onClick={handleGenerate}>건너뛰기</button>
-                <button className={styles.nextBtn} onClick={handleGenerate}>
+                <button onClick={handleGenerate} style={{ padding: '11px 22px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1.5px solid #E0E0E0', background: 'transparent', color: '#555', cursor: 'pointer' }}>
+                  건너뛰기
+                </button>
+                <button onClick={handleGenerate} style={{ padding: '11px 28px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', background: '#0A0A0A', color: '#fff' }}>
                   AI 분석 시작 →
                 </button>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* ── Step 5: 분석 중 ── */}
@@ -864,12 +749,6 @@ export default function GithubPortfolioPage() {
               animation: '_spin 0.85s linear infinite',
               marginBottom: 28,
             }} />
-            <div style={{ width: 220, height: 3, background: '#ebebeb', borderRadius: 4, overflow: 'hidden', marginBottom: 18 }}>
-              <div style={{
-                height: '100%', background: '#000', borderRadius: 4,
-                animation: '_bar 2.5s ease-in-out infinite',
-              }} />
-            </div>
             <p style={{ fontSize: 13, color: '#bbb', letterSpacing: 0.3 }}>
               레포지토리를 분석하고 포트폴리오를 작성 중입니다
             </p>
@@ -904,17 +783,15 @@ export default function GithubPortfolioPage() {
                 <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 12 }}>소개</p>
                 <p style={{ fontSize: 15, lineHeight: 1.9, color: '#333' }}>{portfolio.intro}</p>
               </div>
-              <div style={{ background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>기술 스택</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {portfolio.skills.map((s) => (
-                    <span key={s} style={{ padding: '6px 16px', background: '#000', color: '#fff', borderRadius: 20, fontSize: 13 }}>{s}</span>
-                  ))}
-                </div>
+              <div style={{ gridColumn: '1 / -1', background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 14 }}>기술 스택</p>
+                <p style={{ fontSize: 15, color: '#333', lineHeight: 1.8 }}>
+                  {portfolio.skills.join('  ·  ')}
+                </p>
               </div>
-              <div style={{ background: '#000', color: '#fff', borderRadius: 14, padding: '28px 32px' }}>
-                <p style={{ fontSize: 10, letterSpacing: 3, color: '#555', marginBottom: 12 }}>요약</p>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: '#ccc' }}>{portfolio.summary}</p>
+              <div style={{ gridColumn: '1 / -1', background: '#f8f8f8', borderRadius: 14, padding: '28px 32px' }}>
+                <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 12 }}>요약</p>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: '#444' }}>{portfolio.summary}</p>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <p style={{ fontSize: 10, letterSpacing: 3, color: '#aaa', marginBottom: 16 }}>프로젝트</p>

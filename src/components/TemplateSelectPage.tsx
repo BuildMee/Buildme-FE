@@ -55,7 +55,7 @@ export default function TemplateSelectPage() {
 
   const handleSkip = () => {
     sessionStorage.removeItem('template_select_return');
-    window.location.hash = returnHash;
+    window.location.hash = '';
   };
 
   // Keyboard navigation

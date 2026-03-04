@@ -719,25 +719,29 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
             {/* 하단 고정 CTA 바 */}
             <div style={{
               flexShrink: 0,
-              background: '#fff', borderTop: '1px solid #e8e8e8',
-              padding: '16px 32px',
+              background: 'rgba(10, 10, 14, 0.82)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              padding: '0 40px',
+              height: 64,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              gap: 16,
+              gap: 24,
             }}>
               {/* 왼쪽: 로고 + 텍스트 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Logo size={32} />
-                  <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.5, color: '#111' }}>buildme</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <Logo size={28} />
+                  <span style={{ fontWeight: 800, fontSize: 14, letterSpacing: -0.4, color: 'rgba(255,255,255,0.9)' }}>buildme</span>
                 </div>
-                <div style={{ width: 1, height: 32, background: '#e8e8e8' }} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#111', marginBottom: 2 }}>{aiResult.mood}</div>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11, color: '#aaa' }}>{aiResult.layout} · {aiResult.fontStyle} · {aiResult.theme}</span>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{aiResult.mood}</div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: 0.2 }}>{aiResult.layout} · {aiResult.fontStyle} · {aiResult.theme}</span>
+                    <div style={{ display: 'flex', gap: 3 }}>
                       {[aiResult.backgroundColor, aiResult.primaryColor, aiResult.accentColor].map((c, i) => (
-                        <div key={i} style={{ width: 12, height: 12, borderRadius: '50%', background: c, border: '1.5px solid #e0e0e0' }} />
+                        <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, border: '1px solid rgba(255,255,255,0.12)' }} />
                       ))}
                     </div>
                   </div>
@@ -745,26 +749,41 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
               </div>
 
               {/* 오른쪽: 버튼 */}
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
                 <button
                   onClick={() => setAiResult(null)}
                   style={{
-                    padding: '11px 22px', border: '1px solid #ddd', borderRadius: 4,
-                    background: '#fff', color: '#555', fontSize: 13, cursor: 'pointer',
-                    fontWeight: 500,
+                    padding: '8px 18px',
+                    border: 'none',
+                    borderRadius: 7,
+                    background: 'rgba(255,255,255,0.07)',
+                    color: 'rgba(255,255,255,0.55)',
+                    fontSize: 13, fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s ease, color 0.2s ease',
                   }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.85)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.55)'; }}
                 >
                   다시 생성
                 </button>
                 <button
                   onClick={downloadPortfolioCode}
                   style={{
-                    padding: '11px 22px', border: '1px solid #ddd', borderRadius: 4,
-                    background: '#fff', color: '#333', fontSize: 13, cursor: 'pointer',
-                    fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '8px 18px',
+                    border: 'none',
+                    borderRadius: 7,
+                    background: 'rgba(255,255,255,0.07)',
+                    color: 'rgba(255,255,255,0.55)',
+                    fontSize: 13, fontWeight: 500,
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    transition: 'background 0.2s ease, color 0.2s ease',
                   }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.85)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.55)'; }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
                   코드 다운로드
@@ -772,10 +791,17 @@ h1{font-size:88px;font-weight:900;line-height:1;color:${aiResult.primaryColor};m
                 <button
                   onClick={() => { saveAiDesign(aiResult); window.location.hash = 'resume'; }}
                   style={{
-                    padding: '11px 26px', borderRadius: 4, fontSize: 14, fontWeight: 700,
+                    padding: '8px 20px',
+                    borderRadius: 7,
+                    fontSize: 13, fontWeight: 600,
                     border: 'none', cursor: 'pointer',
-                    background: '#111', color: '#fff',
+                    background: 'rgba(255,255,255,0.92)',
+                    color: '#0a0a0a',
+                    letterSpacing: -0.2,
+                    transition: 'background 0.2s ease',
                   }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.92)'; }}
                 >
                   이 디자인으로 포트폴리오 만들기 →
                 </button>

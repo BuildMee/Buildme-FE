@@ -64,8 +64,8 @@ export default function ResumePage() {
     setStep('detail');
   };
 
-  const STEP_LABELS = ['이력서 업로드', '기본 정보', '상세 정보', '템플릿 선택', '완성'];
-  const STEP_KEYS: Step[] = ['upload', 'info', 'detail', 'template', 'done'];
+  const STEP_LABELS = ['이력서 업로드', '기본 정보', '상세 정보', '완성'];
+  const STEP_KEYS: Step[] = ['upload', 'info', 'detail', 'done'];
 
   const HEADER_TEXT: Record<Step, { title: string; sub: string }> = {
     upload:    { title: '이력서 업로드',       sub: 'PDF 이력서를 올려주세요. AI가 내용을 분석해 포트폴리오 초안을 자동으로 작성합니다.' },
