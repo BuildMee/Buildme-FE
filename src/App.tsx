@@ -10,9 +10,10 @@ import TemplateSelectPage from './components/TemplateSelectPage';
 import PortfolioResultPage from './components/PortfolioResultPage';
 import PublicPortfolioPage from './components/PublicPortfolioPage';
 import PricingPage from './components/PricingPage';
+import AdminPage from './components/AdminPage';
 import LoginModal from './components/LoginModal';
 
-type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'pricing';
+type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'pricing' | 'admin';
 
 function getPage(): Page {
   const params = new URLSearchParams(window.location.search);
@@ -31,6 +32,7 @@ function getPage(): Page {
   if (window.location.hash === '#portfolio-result') return 'portfolio-result';
   if (window.location.hash.startsWith('#portfolio-public/')) return 'portfolio-public';
   if (window.location.hash === '#pricing') return 'pricing';
+  if (window.location.hash === '#admin') return 'admin';
   return 'home';
 }
 
@@ -70,6 +72,7 @@ export default function App() {
     if (page === 'portfolio-result') return <PortfolioResultPage />;
     if (page === 'portfolio-public') return <PublicPortfolioPage />;
     if (page === 'pricing') return <PricingPage />;
+    if (page === 'admin') return <AdminPage />;
     return <MainPage />;
   };
 
