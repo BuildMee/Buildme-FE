@@ -104,6 +104,15 @@ export default function MyPage() {
     setEditData(null);
   };
 
+  useEffect(() => {
+    if (!editTarget) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeEdit();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editTarget]);
+
   const handleEditSave = async () => {
     if (!editTarget || !editData) return;
     setEditSaving(true);
@@ -124,7 +133,7 @@ export default function MyPage() {
   const updateProject = (idx: number, field: string, value: string) => {
     if (!editData) return;
     const projects = [...(editData.projects ?? [])];
-    projects[idx] = { ...projects[idx], [field]: field === 'tech' ? value.split(',').map(s => s.trim()) : value };
+    projects[idx] = { ...projects[idx], [field]: field === 'tech' ? value.split(',').map(s => s.trim()).filter(Boolean) : value };
     setEditData({ ...editData, projects });
   };
 
@@ -306,6 +315,22 @@ export default function MyPage() {
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 6 }}>직군</label>
               <input value={editData.role ?? ''} onChange={(e) => setEditData({ ...editData, role: e.target.value })}
+                style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+
+            {/* GitHub */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 6 }}>GitHub URL</label>
+              <input value={editData.github ?? ''} onChange={(e) => setEditData({ ...editData, github: e.target.value })}
+                placeholder="https://github.com/username"
+                style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+
+            {/* 블로그 */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 6 }}>블로그 URL</label>
+              <input value={editData.blog ?? ''} onChange={(e) => setEditData({ ...editData, blog: e.target.value })}
+                placeholder="https://blog.example.com"
                 style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #EBEBEB', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none' }} />
             </div>
 

@@ -201,6 +201,10 @@ export async function updatePortfolioOnServer(id: string, payload: {
       headers: authHeaders(),
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({})) as { message?: string };
+      return { success: false, message: errBody.message ?? `서버 오류 (${res.status})` };
+    }
     return await res.json();
   } catch {
     return { success: false, message: '서버 연결에 실패했습니다.' };
