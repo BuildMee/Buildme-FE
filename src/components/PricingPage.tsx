@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/PricingPage.module.css';
@@ -24,10 +24,18 @@ const PRO_FEATURES = [
 
 export default function PricingPage() {
   const [toastVisible, setToastVisible] = useState(false);
+  const toastTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
+    };
+  }, []);
 
   const handleSubscribe = () => {
+    if (toastTimeoutRef.current !== null) clearTimeout(toastTimeoutRef.current);
     setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 3000);
+    toastTimeoutRef.current = window.setTimeout(() => setToastVisible(false), 3000);
   };
 
   return (
@@ -66,7 +74,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <button className={styles.currentBtn} disabled>현재 플랜</button>
+          <button className={styles.currentBtn} disabled aria-label="현재 사용 중인 무료 플랜입니다">현재 플랜</button>
         </div>
 
         {/* Pro */}

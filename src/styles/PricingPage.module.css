@@ -1,5 +1,5 @@
 .page {
-  background: #fafafa;
+  background: var(--color-gray-50, #fafafa);
   min-height: 100vh;
 }
 
