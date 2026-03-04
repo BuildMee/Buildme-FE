@@ -19,6 +19,7 @@ export default function ResumePage() {
   const [blog, setBlog] = useState('');
   const [skills, setSkills] = useState('');
   const [highlights, setHighlights] = useState('');
+  const [projects, setProjects] = useState<{ name: string; description: string; tech: string[]; highlights: string }[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>(getSelectedTemplate() ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -60,6 +61,7 @@ export default function ResumePage() {
       if (p.github) setGithub(p.github);
       if (p.blog) setBlog(p.blog);
       if (p.summary) setHighlights(p.summary);
+      if (p.projects?.length) setProjects(p.projects);
     }
     setStep('detail');
   };
@@ -351,7 +353,7 @@ export default function ResumePage() {
                     role,
                     intro: bio,
                     skills: skills.split(',').map(s => s.trim()).filter(Boolean),
-                    projects: [],
+                    projects,
                     summary: highlights,
                     github: github || undefined,
                     blog: blog || undefined,
