@@ -30,10 +30,11 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function AdminPage() {
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Status>('all');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
   const token = sessionStorage.getItem('access_token');
@@ -43,26 +44,28 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAdmin) return;
     fetchSubmissions();
-  }, [filter]);
+  }, []);
 
   const fetchSubmissions = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const query = filter !== 'all' ? `?status=${filter}` : '';
-      const res = await fetch(`${apiBase}/api/templates/submissions${query}`, {
+      const res = await fetch(`${apiBase}/api/templates/submissions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) throw new Error('fetch failed');
       const data = await res.json() as { success: boolean; submissions?: Submission[] };
-      if (data.success && data.submissions) setSubmissions(data.submissions);
+      if (data.success && data.submissions) setAllSubmissions(data.submissions);
     } catch {
-      /* ignore */
+      setError('목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateStatus = async (id: string, status: 'approved' | 'rejected') => {
+  const updateStatus = async (id: string, status: Submission['status']) => {
     setProcessingId(id);
+    setError(null);
     try {
       const res = await fetch(`${apiBase}/api/templates/submissions/${id}`, {
         method: 'PATCH',
@@ -72,18 +75,24 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ status }),
       });
+      if (!res.ok) throw new Error('update failed');
       const data = await res.json() as { success: boolean; submission?: Submission };
       if (data.success && data.submission) {
-        setSubmissions((prev) =>
+        setAllSubmissions((prev) =>
           prev.map((s) => (s.id === id ? data.submission! : s))
         );
       }
     } catch {
-      /* ignore */
+      setError('상태 변경에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setProcessingId(null);
     }
   };
+
+  // 클라이언트 사이드 필터링
+  const submissions = filter === 'all'
+    ? allSubmissions
+    : allSubmissions.filter((s) => s.status === filter);
 
   if (!isAdmin) {
     return (
@@ -98,10 +107,10 @@ export default function AdminPage() {
   }
 
   const counts = {
-    all: submissions.length,
-    pending: submissions.filter((s) => s.status === 'pending').length,
-    approved: submissions.filter((s) => s.status === 'approved').length,
-    rejected: submissions.filter((s) => s.status === 'rejected').length,
+    all: allSubmissions.length,
+    pending: allSubmissions.filter((s) => s.status === 'pending').length,
+    approved: allSubmissions.filter((s) => s.status === 'approved').length,
+    rejected: allSubmissions.filter((s) => s.status === 'rejected').length,
   };
 
   return (
@@ -155,6 +164,11 @@ export default function AdminPage() {
 
       {/* List */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 80px 80px' }}>
+        {error && (
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: '#FEE2E2', borderRadius: 4, fontSize: 13, color: '#991B1B' }}>
+            {error}
+          </div>
+        )}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '80px 0', color: '#BBB', fontSize: 14 }}>불러오는 중...</div>
         ) : submissions.length === 0 ? (

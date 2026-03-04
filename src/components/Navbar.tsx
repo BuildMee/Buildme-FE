@@ -56,15 +56,9 @@ export default function Navbar() {
         {isLoggedIn ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {isAdmin && (
-              <button
-                onClick={() => { window.location.hash = '#admin'; }}
-                style={{
-                  padding: '8px 16px', fontSize: 12, fontWeight: 700,
-                  background: '#0A0A0A', color: '#fff',
-                  border: 'none', cursor: 'pointer', borderRadius: 6,
-                  fontFamily: 'var(--font-mono)', letterSpacing: 1,
-                }}
-              >ADMIN</button>
+              <button className={styles.ctaButton} onClick={() => { window.location.hash = '#admin'; }}>
+                어드민
+              </button>
             )}
             <button className={styles.ctaButton} onClick={() => { window.location.hash = '#mypage'; }}>
               마이페이지
