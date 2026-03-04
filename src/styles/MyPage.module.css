@@ -219,6 +219,74 @@
   text-underline-offset: 3px;
 }
 
+/* ── Plan Card ── */
+.planCard {
+  border: 1px solid var(--color-gray-200);
+  padding: 28px 24px;
+  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.planCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.planCardLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--color-gray-400);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.planCardName {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+.planBadge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  background: #f0f0f0;
+  color: var(--color-gray-400);
+}
+
+.planCardDesc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-gray-400);
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+}
+
+.planUpgradeBtn {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  background: var(--color-black);
+  color: var(--color-white);
+  text-decoration: none;
+  text-align: center;
+  align-self: flex-start;
+  transition: opacity 0.2s;
+}
+
+.planUpgradeBtn:hover {
+  opacity: 0.8;
+}
+
 /* ── Logout ── */
 .logoutSection {
   margin-top: 60px;

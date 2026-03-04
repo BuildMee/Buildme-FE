@@ -199,28 +199,24 @@ export default function MyPage() {
         {/* 결제 내역 탭 */}
         {activeTab === 'payment' && (
           <div className={styles.section}>
-            {dummyPayments.length === 0 ? (
-              <div className={styles.empty}>
-                <p className={styles.emptyText}>결제 내역이 없어요.</p>
+            <div className={styles.planCard}>
+              <div className={styles.planCardTop}>
+                <div>
+                  <p className={styles.planCardLabel}>현재 플랜</p>
+                  <p className={styles.planCardName}>FREE</p>
+                </div>
+                <span className={styles.planBadge}>무료</span>
               </div>
-            ) : (
-              <div className={styles.list}>
-                {dummyPayments.map((pay) => (
-                  <div key={pay.id} className={styles.item}>
-                    <div className={styles.itemInfo}>
-                      <div className={styles.itemName}>{pay.item}</div>
-                      <div className={styles.itemMeta}>{pay.date}</div>
-                    </div>
-                    <div className={styles.itemRight}>
-                      <div className={styles.payAmount}>{pay.amount}</div>
-                      <div className={`${styles.payStatus} ${pay.status === '완료' ? styles.payDone : styles.payCanceled}`}>
-                        {pay.status}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+              <p className={styles.planCardDesc}>
+                포트폴리오 3개 · 기본 템플릿 6종 · 이력서 업로드 1개
+              </p>
+              <a href="#pricing" className={styles.planUpgradeBtn}>
+                Pro로 업그레이드 →
+              </a>
+            </div>
+            <div className={styles.empty} style={{ paddingTop: 40, paddingBottom: 40 }}>
+              <p className={styles.emptyText}>결제 내역이 없어요.</p>
+            </div>
           </div>
         )}
 

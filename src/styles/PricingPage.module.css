@@ -1,0 +1,314 @@
+.page {
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.headerInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 120px 80px 56px;
+}
+
+.headerLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--color-gray-400);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.headerTitle {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 12px;
+}
+
+.headerSub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-gray-400);
+  letter-spacing: 0.5px;
+  line-height: 1.7;
+}
+
+/* ── Plans ── */
+.plans {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 64px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  padding: 36px 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.cardPro {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
+.proBadge {
+  position: absolute;
+  top: -12px;
+  left: 32px;
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-white);
+}
+
+.cardPro .proBadge {
+  background: var(--color-white);
+  color: var(--color-black);
+  border-color: var(--color-black);
+}
+
+/* ── Card Top ── */
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--color-gray-400);
+}
+
+.cardPro .planLabel {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.price {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-black);
+  line-height: 1;
+}
+
+.cardPro .price {
+  color: var(--color-white);
+}
+
+.pricePer {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-gray-400);
+}
+
+.cardPro .pricePer {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.planDesc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+.cardPro .planDesc {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Feature List ── */
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-black);
+  letter-spacing: 0.3px;
+}
+
+.cardPro .featureItem {
+  color: var(--color-white);
+}
+
+/* ── Buttons ── */
+.currentBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 0;
+  background: transparent;
+  color: var(--color-gray-400);
+  border: 1px solid var(--color-gray-200);
+  cursor: not-allowed;
+  width: 100%;
+}
+
+.subscribeBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 0;
+  background: var(--color-white);
+  color: var(--color-black);
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+}
+
+.subscribeBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── FAQ ── */
+.faq {
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.faqInner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 64px 80px;
+}
+
+.faqTitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 36px;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.faqItem {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.faqItem:first-child {
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.faqQ {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-black);
+  margin-bottom: 8px;
+}
+
+.faqA {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-gray-400);
+  line-height: 1.7;
+  letter-spacing: 0.2px;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 14px 24px;
+  white-space: nowrap;
+  z-index: 9999;
+  animation: toast-in 0.25s ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .headerInner {
+    padding: 100px 40px 40px;
+  }
+  .plans {
+    padding: 48px 40px;
+  }
+  .faqInner {
+    padding: 48px 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerInner {
+    padding: 90px 24px 32px;
+  }
+  .headerTitle {
+    font-size: 28px;
+  }
+  .plans {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+  }
+  .faqInner {
+    padding: 32px 24px;
+  }
+  .proBadge {
+    left: 24px;
+  }
+}
