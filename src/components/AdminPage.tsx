@@ -100,7 +100,7 @@ export default function AdminPage() {
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontSize: 48, marginBottom: 16 }}>🔒</p>
           <p style={{ fontSize: 16, color: '#888' }}>접근 권한이 없습니다.</p>
-          <a href="/" style={{ marginTop: 16, display: 'inline-block', fontSize: 14, color: '#0A0A0A', textDecoration: 'underline' }}>홈으로</a>
+          <a href="#" style={{ marginTop: 16, display: 'inline-block', fontSize: 14, color: '#0A0A0A', textDecoration: 'underline' }}>홈으로</a>
         </div>
       </div>
     );
