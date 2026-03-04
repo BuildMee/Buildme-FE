@@ -68,6 +68,13 @@ export default function ResumePage() {
 
   const STEP_LABELS = ['이력서 업로드', '기본 정보', '상세 정보', '완성'];
   const STEP_KEYS: Step[] = ['upload', 'info', 'detail', 'done'];
+  const getStepIndex = (s: Step): number => {
+    if (s === 'upload') return 0;
+    if (s === 'info') return 1;
+    if (s === 'analyzing' || s === 'detail') return 2;
+    return 3;
+  };
+  const stepIndex = getStepIndex(step);
 
   const HEADER_TEXT: Record<Step, { title: string; sub: string }> = {
     upload:    { title: '이력서 업로드',       sub: 'PDF 이력서를 올려주세요. AI가 내용을 분석해 포트폴리오 초안을 자동으로 작성합니다.' },
@@ -87,16 +94,52 @@ export default function ResumePage() {
           <h1 className={styles.headerTitle}>{HEADER_TEXT[step].title}</h1>
           <p className={styles.headerSub}>{HEADER_TEXT[step].sub}</p>
         </div>
-        <div className={styles.steps}>
-          {STEP_LABELS.map((s, i) => (
-            <div key={i} className={styles.stepGroup}>
-              <div className={`${styles.step} ${step === STEP_KEYS[i] ? styles.stepActive : ''}`}>
-                <div className={styles.stepNum}>0{i + 1}</div>
-                <div className={styles.stepText}>{s}</div>
+        <div style={{
+          maxWidth: 1400, margin: '0 auto',
+          padding: '0 80px 44px',
+          display: 'flex', alignItems: 'center',
+        }}>
+          {STEP_LABELS.map((label, i) => {
+            const isActive = i === stepIndex;
+            const isCompleted = i < stepIndex;
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < STEP_LABELS.length - 1 ? '1' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: '50%',
+                    background: isActive || isCompleted ? '#0A0A0A' : 'transparent',
+                    border: isActive || isCompleted ? 'none' : '1.5px solid #DADADA',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, transition: 'all 0.3s ease',
+                    boxShadow: isActive ? '0 0 0 4px rgba(10,10,10,0.08)' : 'none',
+                  }}>
+                    {isCompleted ? (
+                      <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                        <path d="M1.5 5L5.5 9L11.5 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: 12,
+                        color: isActive ? '#FFF' : '#AAAAAA', lineHeight: 1,
+                      }}>{i + 1}</span>
+                    )}
+                  </div>
+                  <p style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 2,
+                    color: isActive ? '#0A0A0A' : isCompleted ? '#555' : '#AAAAAA',
+                    textTransform: 'uppercase', transition: 'color 0.3s', marginBottom: 0,
+                  }}>{label}</p>
+                </div>
+                {i < STEP_LABELS.length - 1 && (
+                  <div style={{
+                    flex: 1, height: 1,
+                    background: isCompleted ? '#0A0A0A' : '#E5E5E5',
+                    margin: '0 20px', transition: 'background 0.4s ease',
+                  }} />
+                )}
               </div>
-              {i < STEP_LABELS.length - 1 && <div className={styles.stepArrow}>→</div>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
