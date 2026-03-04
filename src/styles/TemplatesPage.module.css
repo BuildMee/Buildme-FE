@@ -220,6 +220,20 @@
   opacity: 1;
 }
 
+.proLockBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.68);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .newBadge {
   position: absolute;
   top: 12px;
@@ -362,6 +376,18 @@
 
 .useBtn:hover {
   background: #333;
+}
+
+.useBtnPro {
+  background: transparent;
+  color: var(--color-gray-400);
+  border: 1px solid var(--color-gray-200);
+}
+
+.useBtnPro:hover {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
 }
 
 /* ── Stagger Delays ── */
@@ -876,4 +902,372 @@
   .contributeTitle {
     font-size: 36px;
   }
+}
+
+/* ── Pro Section ── */
+.proSection {
+  background: #FAFAFA;
+}
+
+.proDividerWrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+.proDivider {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 64px 0 40px;
+}
+
+.proDividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-200);
+}
+
+.proDividerLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--color-gray-400);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.proGrid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 80px 64px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.proCard { position: relative; }
+
+.proCardPreviewWrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.proCardBlur {
+  filter: blur(5px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.proLockOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.proLockLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.proCardFooterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-top: none;
+}
+
+.proCardNameText {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+.proCardCat {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-gray-400);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.proBadge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 4px 10px;
+  background: var(--color-black);
+  color: var(--color-white);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.proBanner { background: var(--color-black); }
+
+.proBannerInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 48px;
+}
+
+.proBannerLeft { flex: 1; min-width: 0; }
+
+.proBannerTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.proBannerTitle {
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 1;
+  color: var(--color-white);
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+}
+
+.proBannerSub {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--color-gray-400);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.proBannerFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.proBannerFeatures li {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.proBannerFeatures li::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.proBannerRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.proBannerBtn {
+  display: inline-block;
+  padding: 20px 52px;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.proBannerBtn:hover { opacity: 0.88; }
+
+.proBannerSecLink {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+
+.proBannerSecLink:hover { color: var(--color-white); }
+
+/* Pro preview styles */
+.previewProGlass {
+  background: linear-gradient(135deg, #1C1C2E 0%, #2D1B69 100%);
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.proGlassGlow {
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(130, 80, 255, 0.55) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.proGlassCard {
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 22px 28px;
+}
+
+.proGlassName {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 0.88;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.proGlassSub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: rgba(160, 110, 255, 0.8);
+  text-transform: uppercase;
+}
+
+.previewProMag {
+  background: #FFF8EE;
+  justify-content: flex-end;
+  align-items: flex-start;
+  border: 1px solid #EEE;
+  border-bottom: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.proMagNum {
+  position: absolute;
+  top: 8px; right: 18px;
+  font-family: var(--font-display);
+  font-size: 120px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.04);
+  user-select: none;
+}
+
+.proMagAccent {
+  width: 24px; height: 3px;
+  background: #E8832A;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.proMagName {
+  font-family: var(--font-display);
+  font-size: 54px;
+  line-height: 0.88;
+  color: var(--color-black);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.proMagRole {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #E8832A;
+  text-transform: uppercase;
+}
+
+.previewProTypo {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-bottom: none;
+  padding: 0;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.proTypoLeft {
+  background: var(--color-black);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.proTypoBig {
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 0.82;
+  color: var(--color-white);
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.proTypoRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 16px;
+  gap: 6px;
+}
+
+.proTypoName {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-black);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.proTypoRole {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-gray-400);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+  .proDividerWrap, .proGrid { padding-left: 40px; padding-right: 40px; }
+  .proBannerInner { padding: 64px 40px; flex-direction: column; align-items: flex-start; }
+  .proBannerRight { align-items: flex-start; }
+  .proBannerTitle { font-size: 40px; }
+}
+
+@media (max-width: 640px) {
+  .proDividerWrap { padding: 0 24px; }
+  .proDivider { padding: 48px 0 32px; }
+  .proGrid { padding: 0 24px 48px; grid-template-columns: 1fr; }
+  .proBannerInner { padding: 56px 24px; }
+  .proBannerTitle { font-size: 32px; }
+  .proBannerBtn { padding: 16px 36px; }
 }

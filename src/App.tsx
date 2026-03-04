@@ -10,6 +10,7 @@ import TemplateSelectPage from './components/TemplateSelectPage';
 import PortfolioResultPage from './components/PortfolioResultPage';
 import PublicPortfolioPage from './components/PublicPortfolioPage';
 import PricingPage from './components/PricingPage';
+import LoginModal from './components/LoginModal';
 
 type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'pricing';
 
@@ -33,27 +34,49 @@ function getPage(): Page {
   return 'home';
 }
 
+const PROTECTED: Page[] = ['resume'];
+
 export default function App() {
   const [page, setPage] = useState<Page>(getPage);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => {
-      setPage(getPage());
+      const next = getPage();
+      const isLoggedIn = !!sessionStorage.getItem('access_token');
+
+      if (PROTECTED.includes(next) && !isLoggedIn) {
+        // 해시만 제거 (hashchange 재발생 없음)
+        window.history.replaceState(null, '', window.location.pathname);
+        setLoginModalOpen(true);
+        return;
+      }
+
+      setPage(next);
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
     window.addEventListener('hashchange', handler);
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
-  if (page === 'github-callback') return <GitHubCallbackPage />;
-  if (page === 'templates') return <TemplatesPage />;
-  if (page === 'submit') return <SubmitPage />;
-  if (page === 'resume') return <ResumePage />;
-  if (page === 'mypage') return <MyPage />;
-  if (page === 'github-portfolio') return <GithubPortfolioPage />;
-  if (page === 'template-select') return <TemplateSelectPage />;
-  if (page === 'portfolio-result') return <PortfolioResultPage />;
-  if (page === 'portfolio-public') return <PublicPortfolioPage />;
-  if (page === 'pricing') return <PricingPage />;
-  return <MainPage />;
+  const renderPage = () => {
+    if (page === 'github-callback') return <GitHubCallbackPage />;
+    if (page === 'templates') return <TemplatesPage />;
+    if (page === 'submit') return <SubmitPage />;
+    if (page === 'resume') return <ResumePage />;
+    if (page === 'mypage') return <MyPage />;
+    if (page === 'github-portfolio') return <GithubPortfolioPage />;
+    if (page === 'template-select') return <TemplateSelectPage />;
+    if (page === 'portfolio-result') return <PortfolioResultPage />;
+    if (page === 'portfolio-public') return <PublicPortfolioPage />;
+    if (page === 'pricing') return <PricingPage />;
+    return <MainPage />;
+  };
+
+  return (
+    <>
+      {renderPage()}
+      {loginModalOpen && <LoginModal onClose={() => setLoginModalOpen(false)} />}
+    </>
+  );
 }

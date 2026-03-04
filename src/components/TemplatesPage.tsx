@@ -14,6 +14,7 @@ interface CommunityTemplate {
   author: string;
   likes: number;
   isNew?: boolean;
+  isPro?: boolean;
   component: React.ReactNode;
 }
 
@@ -146,9 +147,9 @@ const communityTemplates: CommunityTemplate[] = [
   { id: 'editorial', name: 'Editorial', category: 'creative', author: 'leesoojin', likes: 458, isNew: true, component: <PreviewEditorial /> },
   { id: 'neon', name: 'Neon Dark', category: 'dark', author: 'park_jy', likes: 344, isNew: true, component: <PreviewNeon /> },
   { id: 'retro', name: 'Retro Terminal', category: 'tech', author: 'choi_dev', likes: 289, component: <PreviewRetro /> },
-  { id: 'mono', name: 'Monochrome', category: 'minimal', author: 'han_jun', likes: 201, component: <PreviewMono /> },
-  { id: 'split', name: 'Split Layout', category: 'creative', author: 'yoon_seri', likes: 178, isNew: true, component: <PreviewSplit /> },
-  { id: 'cinematic', name: 'Cinematic', category: 'dark', author: 'ryu_dh', likes: 143, component: <PreviewCinematic /> },
+  { id: 'mono', name: 'Monochrome', category: 'minimal', author: 'han_jun', likes: 201, isPro: true, component: <PreviewMono /> },
+  { id: 'split', name: 'Split Layout', category: 'creative', author: 'yoon_seri', likes: 178, isNew: true, isPro: true, component: <PreviewSplit /> },
+  { id: 'cinematic', name: 'Cinematic', category: 'dark', author: 'ryu_dh', likes: 143, isPro: true, component: <PreviewCinematic /> },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
@@ -204,18 +205,16 @@ export default function TemplatesPage() {
       alert('좋아요는 로그인 후 이용할 수 있어요.');
       return;
     }
-    setLiked((prev) => {
-      const wasLiked = prev.has(id);
-      const next = new Set(prev);
-      if (wasLiked) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      saveLiked(next);
-      setLikeCounts((c) => ({ ...c, [id]: c[id] + (wasLiked ? -1 : 1) }));
-      return next;
-    });
+    const wasLiked = liked.has(id);
+    const next = new Set(liked);
+    if (wasLiked) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    saveLiked(next);
+    setLiked(next);
+    setLikeCounts((c) => ({ ...c, [id]: c[id] + (wasLiked ? -1 : 1) }));
     setPoppedId(id);
     setTimeout(() => setPoppedId(null), 250);
   };
@@ -314,10 +313,18 @@ export default function TemplatesPage() {
             className={`${styles.card} ${visibleCards.has(tpl.id) ? styles.cardVisible : ''} ${STAGGER[idx] ?? ''}`}
           >
             <div className={styles.previewWrapper}>
-              {tpl.isNew && <div className={styles.newBadge}>NEW</div>}
+              {tpl.isNew && !tpl.isPro && <div className={styles.newBadge}>NEW</div>}
+              {tpl.isPro && <div className={styles.proLockBadge}><MiniLockIcon /></div>}
               {tpl.component}
-              <div className={styles.cardOverlay} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }} style={{ cursor: 'pointer' }}>
-                <span className={styles.overlayText}>템플릿 사용하기</span>
+              <div
+                className={styles.cardOverlay}
+                onClick={() => {
+                  if (tpl.isPro) { window.location.hash = 'pricing'; }
+                  else { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className={styles.overlayText}>{tpl.isPro ? 'Pro로 잠금 해제' : '템플릿 사용하기'}</span>
               </div>
             </div>
             <div className={styles.cardFooter}>
@@ -334,12 +341,21 @@ export default function TemplatesPage() {
                   <HeartIcon filled={liked.has(tpl.id)} />
                   {likeCounts[tpl.id] >= 1000 ? `${(likeCounts[tpl.id] / 1000).toFixed(1)}k` : likeCounts[tpl.id]}
                 </button>
-                <button className={styles.useBtn} onClick={() => { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }}>사용하기</button>
+                <button
+                  className={`${styles.useBtn} ${tpl.isPro ? styles.useBtnPro : ''}`}
+                  onClick={() => {
+                    if (tpl.isPro) { window.location.hash = 'pricing'; }
+                    else { saveSelectedTemplate(tpl.id); window.location.hash = 'resume'; }
+                  }}
+                >
+                  {tpl.isPro ? 'Pro 전용' : '사용하기'}
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
+
 
       {/* ── Contribute CTA ── */}
       <section className={styles.contributeSect}>
@@ -371,6 +387,16 @@ function PlusIcon() {
     </svg>
   );
 }
+
+function MiniLockIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="11" width="14" height="10" rx="2" stroke="white" strokeWidth="2.2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 
 function HeartIcon({ filled }: { filled?: boolean }) {
   return (

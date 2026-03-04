@@ -275,16 +275,6 @@ export default function MainPage() {
             <button className={styles.btnGhost}>템플릿 둘러보기 →</button>
           </div>
         </div>
-        <div className={styles.heroRight}>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>890+</div>
-            <div className={styles.statLabel}>만들어진 포트폴리오</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>1,200+</div>
-            <div className={styles.statLabel}>총 사용자</div>
-          </div>
-        </div>
       </section>
 
       {/* ===== Template Gallery ===== */}
