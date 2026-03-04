@@ -98,7 +98,7 @@ export async function uploadResumeAndAnalyze(payload: {
   file: File;
   name: string;
   role: string;
-}): Promise<{ success: boolean; portfolio?: PortfolioData; fallback?: boolean; message?: string }> {
+}): Promise<{ success: boolean; portfolio?: PortfolioData; fallback?: boolean; message?: string; code?: string }> {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
   try {
@@ -116,8 +116,8 @@ export async function uploadResumeAndAnalyze(payload: {
     });
 
     if (!res.ok) {
-      const errBody = await res.json().catch(() => ({})) as { message?: string };
-      return { success: false, message: errBody.message ?? `서버 오류 (${res.status})` };
+      const errBody = await res.json().catch(() => ({})) as { message?: string; code?: string };
+      return { success: false, message: errBody.message ?? `서버 오류 (${res.status})`, code: errBody.code };
     }
 
     return await res.json();

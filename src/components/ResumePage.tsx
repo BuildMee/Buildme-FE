@@ -5,6 +5,7 @@ import styles from '../styles/ResumePage.module.css';
 import { TEMPLATES, saveSelectedTemplate, getSelectedTemplate, savePortfolioData, clearAiDesign } from '../utils/templates';
 import { savePortfolioToServer, uploadResumeAndAnalyze } from '../utils/portfolioApi';
 import { PREVIEWS } from './TemplatePreviews';
+import UpgradeModal from './UpgradeModal';
 
 type Step = 'upload' | 'info' | 'analyzing' | 'detail' | 'template' | 'done';
 
@@ -12,6 +13,7 @@ export default function ResumePage() {
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<'daily' | 'resume' | null>(null);
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [bio, setBio] = useState('');
@@ -50,6 +52,16 @@ export default function ResumePage() {
     setStep('analyzing');
     const result = await uploadResumeAndAnalyze({ file, name, role });
     if (!result.success) {
+      if (result.code === 'RESUME_LIMIT') {
+        setStep('upload');
+        setUpgradeReason('resume');
+        return;
+      }
+      if (result.code === 'DAILY_LIMIT') {
+        setStep('upload');
+        setUpgradeReason('daily');
+        return;
+      }
       alert(result.message ?? 'AI 분석에 실패했어요. 다시 시도해주세요.');
       setStep('info');
       return;
@@ -424,6 +436,9 @@ export default function ResumePage() {
 
       </div>
       <Footer />
+      {upgradeReason && (
+        <UpgradeModal reason={upgradeReason} onClose={() => setUpgradeReason(null)} />
+      )}
     </div>
   );
 }

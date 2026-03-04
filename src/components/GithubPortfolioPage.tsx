@@ -4,6 +4,7 @@ import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
 import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
+import UpgradeModal from './UpgradeModal';
 
 type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
 
@@ -78,6 +79,7 @@ export default function GithubPortfolioPage() {
   const [portfolio, setPortfolio] = useState<GeneratedPortfolio | null>(null);
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [hoveredRepo, setHoveredRepo] = useState<number | null>(null);
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
@@ -152,11 +154,16 @@ export default function GithubPortfolioPage() {
         if (data.fallback) setError('⚠️ AI API 한도 초과 — 레포 정보 기반으로 자동 생성된 초안입니다.');
 
         if (token) {
-          savePortfolioToServer({
+          const saveResult = await savePortfolioToServer({
             title: `${userName || '내'}의 포트폴리오`,
             templateId: getSelectedTemplate() ?? 'minimal-dark',
             data: portfolioData,
-          }).catch(() => {});
+          }).catch(() => ({ success: false, code: undefined }));
+          if (!saveResult.success && (saveResult as { code?: string }).code === 'DAILY_LIMIT') {
+            setUpgradeOpen(true);
+            setStep('select');
+            return;
+          }
         }
 
         setStep('done');
@@ -819,6 +826,7 @@ export default function GithubPortfolioPage() {
       {currentStepIdx === -1 && null}
 
       <Footer />
+      {upgradeOpen && <UpgradeModal reason="daily" onClose={() => setUpgradeOpen(false)} />}
     </div>
   );
 }

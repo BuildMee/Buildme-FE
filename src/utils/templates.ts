@@ -5,6 +5,9 @@ export interface TemplateInfo {
   description: string;
 }
 
+// 무료 플랜에서 사용 불가한 Pro 전용 템플릿 ID
+export const PRO_TEMPLATE_IDS: string[] = ['neo', 'hacker', 'editorial', 'neon'];
+
 export const TEMPLATES: TemplateInfo[] = [
   { id: 'minimal-dark', name: 'Minimal Dark', category: 'dark', description: '심플하고 다크한 개발자 감성' },
   { id: 'clean-white', name: 'Clean White', category: 'minimal', description: '깔끔하고 밝은 미니멀 스타일' },
