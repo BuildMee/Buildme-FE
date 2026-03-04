@@ -864,14 +864,6 @@ export default function GithubPortfolioPage() {
               animation: '_spin 0.85s linear infinite',
               marginBottom: 28,
             }} />
-            <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{
-                  width: 7, height: 7, borderRadius: '50%', background: '#000',
-                  animation: `_pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
-                }} />
-              ))}
-            </div>
             <div style={{ width: 220, height: 3, background: '#ebebeb', borderRadius: 4, overflow: 'hidden', marginBottom: 18 }}>
               <div style={{
                 height: '100%', background: '#000', borderRadius: 4,

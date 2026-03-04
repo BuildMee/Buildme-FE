@@ -45,14 +45,17 @@ export default function TemplateSelectPage() {
     }, 320);
   }, [index, isAnimating]);
 
+  const returnHash = sessionStorage.getItem('template_select_return') || 'resume';
+
   const handleConfirm = () => {
     saveSelectedTemplate(current.id);
-    window.location.hash = 'resume';
+    sessionStorage.removeItem('template_select_return');
+    window.location.hash = returnHash;
   };
 
   const handleSkip = () => {
-    clearSelectedTemplate();
-    window.location.hash = 'resume';
+    sessionStorage.removeItem('template_select_return');
+    window.location.hash = returnHash;
   };
 
   // Keyboard navigation

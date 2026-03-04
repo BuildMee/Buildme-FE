@@ -278,12 +278,6 @@ export default function TemplatesPage() {
             </p>
           </div>
           <div className={styles.headerRight}>
-            <div className={styles.headerStats}>
-              <div className={styles.statItem}>
-                <div className={styles.statNum}>{communityTemplates.length}+</div>
-                <div className={styles.statLabel}>템플릿</div>
-              </div>
-            </div>
             <a href="#submit" className={styles.submitBtn}>
               <PlusIcon />
               템플릿 제출

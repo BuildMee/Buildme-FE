@@ -273,7 +273,10 @@ export default function MainPage() {
             <div className={styles.heroCtaRow}>
               <button
                 className={styles.btnPrimary}
-                onClick={isLoggedIn ? () => { window.location.hash = 'github-portfolio'; } : handleGitHubLogin}
+                onClick={isLoggedIn ? () => {
+                  sessionStorage.setItem('template_select_return', 'github-portfolio');
+                  window.location.hash = 'template-select';
+                } : handleGitHubLogin}
               >
                 <GitHubIcon />
                 {isLoggedIn ? '프로젝트 선택하기' : 'GitHub으로 시작하기'}
@@ -284,7 +287,7 @@ export default function MainPage() {
                 이력서로 시작하기
               </button>
             </div>
-            <button className={styles.btnGhost}>템플릿 둘러보기 →</button>
+            <button className={styles.btnGhost} onClick={() => { window.location.hash = 'templates'; }}>템플릿 둘러보기 →</button>
           </div>
         </div>
       </section>
