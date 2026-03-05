@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { saveSelectedTemplate, clearSelectedTemplate, TEMPLATES } from '../utils/templates';
+import { saveSelectedTemplate, clearSelectedTemplate, TEMPLATES, PRO_TEMPLATE_IDS } from '../utils/templates';
 import { PREVIEWS } from './TemplatePreviews';
+import UpgradeModal from './UpgradeModal';
 
 const CATEGORY_KO: Record<string, string> = {
   minimal: '미니멀',
@@ -26,6 +27,8 @@ export default function TemplateSelectPage() {
   const [index, setIndex] = useState(0);
   const [animDir, setAnimDir] = useState<'left' | 'right' | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const isAdmin = sessionStorage.getItem('is_admin') === 'true';
 
   const current = TEMPLATES[index];
   const Preview = PREVIEWS[current.id] ?? PREVIEWS['minimal-dark'];
@@ -47,7 +50,13 @@ export default function TemplateSelectPage() {
 
   const returnHash = sessionStorage.getItem('template_select_return') || 'resume';
 
+  const isPro = PRO_TEMPLATE_IDS.includes(current.id);
+
   const handleConfirm = () => {
+    if (isPro && !isAdmin) {
+      setUpgradeOpen(true);
+      return;
+    }
     saveSelectedTemplate(current.id);
     sessionStorage.removeItem('template_select_return');
     window.location.hash = returnHash;
@@ -192,15 +201,24 @@ export default function TemplateSelectPage() {
       }}>
         {/* Template info */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{
-            display: 'inline-block',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 10, letterSpacing: 2.5,
-            color: 'rgba(255,255,255,0.45)',
-            textTransform: 'uppercase',
-            marginBottom: 10,
-          }}>
-            {CATEGORY_KO[current.category] ?? current.category}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 10 }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10, letterSpacing: 2.5,
+              color: 'rgba(255,255,255,0.45)',
+              textTransform: 'uppercase',
+            }}>
+              {CATEGORY_KO[current.category] ?? current.category}
+            </div>
+            {isPro && !isAdmin && (
+              <div style={{
+                background: '#fff', color: '#0A0A0A',
+                fontSize: 9, fontWeight: 800, letterSpacing: 2,
+                padding: '3px 8px',
+              }}>
+                PRO
+              </div>
+            )}
           </div>
           <div style={{
             fontFamily: 'var(--font-display)',
@@ -261,10 +279,12 @@ export default function TemplateSelectPage() {
             이전
           </button>
           <button className="tpl-cta" onClick={handleConfirm}>
-            이 템플릿 적용하기 →
+            {isPro && !isAdmin ? '🔒 Pro 전용' : '이 템플릿 적용하기 →'}
           </button>
         </div>
       </div>
+
+      {upgradeOpen && <UpgradeModal reason="template" onClose={() => setUpgradeOpen(false)} />}
 
       {/* ── Left / Right click zones ── */}
       <div
