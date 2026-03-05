@@ -4,6 +4,8 @@ import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
 import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
+import { handleGitHubLogin } from '../utils/auth';
+import { GitHubIcon } from './Icons';
 import UpgradeModal from './UpgradeModal';
 
 type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
@@ -84,6 +86,8 @@ export default function GithubPortfolioPage() {
 
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
   const token = sessionStorage.getItem('access_token');
+  const authProvider = sessionStorage.getItem('auth_provider');
+  const isGoogleOnly = authProvider === 'google';
 
   useEffect(() => {
     if (!token) { window.location.hash = ''; return; }
@@ -286,7 +290,81 @@ export default function GithubPortfolioPage() {
         {/* ════════════════════════════════════════
             STEP 1 — Premium Select UI
         ════════════════════════════════════════ */}
-        {step === 'select' && (
+        {step === 'select' && isGoogleOnly && (
+          <div style={{
+            minHeight: '70vh',
+            background: '#F7F7F8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              maxWidth: 480,
+              width: '100%',
+              margin: '0 auto',
+              padding: '60px 40px',
+              textAlign: 'center',
+            }}>
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: '#0A0A0A', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 28px',
+              }}>
+                <GitHubIcon size={40} />
+              </div>
+
+              <h2 style={{
+                fontSize: 24, fontWeight: 800, color: '#0A0A0A',
+                marginBottom: 12, fontFamily: 'var(--font-heading)',
+              }}>
+                GitHub 연동이 필요합니다
+              </h2>
+              <p style={{
+                fontSize: 15, color: '#777', lineHeight: 1.7,
+                marginBottom: 36,
+              }}>
+                GitHub 레포지토리를 기반으로 포트폴리오를 생성하려면<br />
+                GitHub 계정 로그인이 필요합니다.
+              </p>
+
+              <button
+                onClick={handleGitHubLogin}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  padding: '14px 32px', borderRadius: 10,
+                  fontSize: 15, fontWeight: 700,
+                  border: 'none', cursor: 'pointer',
+                  background: '#0A0A0A', color: '#fff',
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              >
+                <GitHubIcon size={20} />
+                GitHub으로 로그인
+              </button>
+
+              <p style={{ fontSize: 13, color: '#BBB', marginTop: 20 }}>
+                GitHub 로그인 후 레포지토리를 선택할 수 있습니다.
+              </p>
+
+              <button
+                onClick={() => { window.location.hash = ''; }}
+                style={{
+                  marginTop: 24, padding: '10px 20px',
+                  fontSize: 13, fontWeight: 500, color: '#999',
+                  background: 'none', border: '1px solid #E0E0E0',
+                  borderRadius: 8, cursor: 'pointer',
+                }}
+              >
+                ← 돌아가기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 'select' && !isGoogleOnly && (
           <>
             <style>{`
               @keyframes _spin { to { transform: rotate(360deg); } }
