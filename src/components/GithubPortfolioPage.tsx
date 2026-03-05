@@ -4,6 +4,8 @@ import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
 import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
 import { savePortfolioToServer } from '../utils/portfolioApi';
+import { handleGitHubLogin } from '../utils/auth';
+import { GitHubIcon } from './Icons';
 import UpgradeModal from './UpgradeModal';
 
 type Step = 'select' | 'role' | 'detail' | 'extra' | 'generating' | 'done';
