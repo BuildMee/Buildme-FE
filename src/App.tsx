@@ -11,9 +11,10 @@ import PortfolioResultPage from './components/PortfolioResultPage';
 import PublicPortfolioPage from './components/PublicPortfolioPage';
 import PricingPage from './components/PricingPage';
 import AdminPage from './components/AdminPage';
+import AiTemplatePage from './components/AiTemplatePage';
 import LoginModal from './components/LoginModal';
 
-type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'pricing' | 'admin';
+type Page = 'home' | 'templates' | 'submit' | 'resume' | 'github-callback' | 'mypage' | 'github-portfolio' | 'template-select' | 'portfolio-result' | 'portfolio-public' | 'pricing' | 'admin' | 'ai-template';
 
 function getPage(): Page {
   const params = new URLSearchParams(window.location.search);
@@ -33,6 +34,7 @@ function getPage(): Page {
   if (window.location.hash.startsWith('#portfolio-public/')) return 'portfolio-public';
   if (window.location.hash === '#pricing') return 'pricing';
   if (window.location.hash === '#admin') return 'admin';
+  if (window.location.hash === '#ai-template') return 'ai-template';
   return 'home';
 }
 
@@ -73,6 +75,7 @@ export default function App() {
     if (page === 'portfolio-public') return <PublicPortfolioPage />;
     if (page === 'pricing') return <PricingPage />;
     if (page === 'admin') return <AdminPage />;
+    if (page === 'ai-template') return <AiTemplatePage />;
     return <MainPage />;
   };
 

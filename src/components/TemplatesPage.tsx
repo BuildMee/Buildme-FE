@@ -364,6 +364,10 @@ export default function TemplatesPage() {
             </p>
           </div>
           <div className={styles.headerRight}>
+            <a href="#ai-template" className={styles.aiBtn}>
+              <AiIcon />
+              AI로 만들기
+            </a>
             <a href="#submit" className={styles.submitBtn}>
               <PlusIcon />
               템플릿 제출
@@ -478,6 +482,16 @@ export default function TemplatesPage() {
 }
 
 /* ── Icons ── */
+
+function AiIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5" />
+      <path d="M2 12l10 5 10-5" />
+    </svg>
+  );
+}
 
 function PlusIcon() {
   return (

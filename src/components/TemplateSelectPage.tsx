@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { saveSelectedTemplate, clearSelectedTemplate, TEMPLATES, PRO_TEMPLATE_IDS } from '../utils/templates';
+import { saveSelectedTemplate, TEMPLATES, PRO_TEMPLATE_IDS } from '../utils/templates';
 import { PREVIEWS } from './TemplatePreviews';
 import UpgradeModal from './UpgradeModal';
 

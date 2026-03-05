@@ -54,7 +54,7 @@ export default function GitHubCallbackPage() {
       .then((data: { success: boolean; access_token?: string; message?: string }) => {
         if (data.success && data.access_token) {
           sessionStorage.setItem('access_token', data.access_token);
-          sessionStorage.setItem('auth_provider', provider);
+          sessionStorage.setItem('auth_provider', detectedProvider);
 
           // 어드민 여부 확인
           if (detectedProvider === 'github') {
