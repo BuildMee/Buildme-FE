@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/GitHubCallbackPage.module.css';
+import { API_BASE } from '../utils/portfolioApi';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -39,10 +40,9 @@ export default function GitHubCallbackPage() {
       return;
     }
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
     const endpoint = detectedProvider === 'google'
-      ? `${apiBase}/api/auth/google`
-      : `${apiBase}/api/auth/github`;
+      ? `${API_BASE}/api/auth/google`
+      : `${API_BASE}/api/auth/github`;
 
     // 백엔드에 code를 전송해 access_token 교환
     fetch(endpoint, {
@@ -54,11 +54,11 @@ export default function GitHubCallbackPage() {
       .then((data: { success: boolean; access_token?: string; message?: string }) => {
         if (data.success && data.access_token) {
           sessionStorage.setItem('access_token', data.access_token);
-          sessionStorage.setItem('auth_provider', provider);
+          sessionStorage.setItem('auth_provider', detectedProvider);
 
           // 어드민 여부 확인
           if (detectedProvider === 'github') {
-            fetch(`${apiBase}/api/auth/me`, {
+            fetch(`${API_BASE}/api/auth/me`, {
               headers: { Authorization: `Bearer ${data.access_token}` },
             })
               .then((r) => r.json())

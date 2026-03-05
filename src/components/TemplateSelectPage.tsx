@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { saveSelectedTemplate, clearSelectedTemplate, TEMPLATES, PRO_TEMPLATE_IDS } from '../utils/templates';
+import { saveSelectedTemplate, saveAiDesign, TEMPLATES, PRO_TEMPLATE_IDS } from '../utils/templates';
+import type { AiDesign } from '../utils/templates';
 import { PREVIEWS } from './TemplatePreviews';
+import { API_BASE } from '../utils/portfolioApi';
 import UpgradeModal from './UpgradeModal';
 
 const CATEGORY_KO: Record<string, string> = {
@@ -8,6 +10,7 @@ const CATEGORY_KO: Record<string, string> = {
   dark: '다크',
   creative: '크리에이티브',
   tech: '테크',
+  ai: 'AI',
 };
 
 const TEMPLATE_NAMES_KO: Record<string, string> = {
@@ -21,7 +24,15 @@ const TEMPLATE_NAMES_KO: Record<string, string> = {
   'hacker': '해커 모드',
   'editorial': '에디토리얼',
   'neon': '네온 다크',
+  'ai-generate': 'AI 커스텀',
 };
+
+const EXAMPLE_PROMPTS = [
+  '다크한 터미널 감성',
+  '밝고 깔끔한 미니멀',
+  '보라색 네온 다크',
+  '매거진 레이아웃',
+];
 
 export default function TemplateSelectPage() {
   const [index, setIndex] = useState(0);
@@ -30,7 +41,14 @@ export default function TemplateSelectPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const isAdmin = sessionStorage.getItem('is_admin') === 'true';
 
+  // AI generation state
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDesign, setAiDesign] = useState<AiDesign | null>(null);
+  const [aiError, setAiError] = useState('');
+
   const current = TEMPLATES[index];
+  const isAiCard = current.id === 'ai-generate';
   const Preview = PREVIEWS[current.id] ?? PREVIEWS['minimal-dark'];
 
   const navigate = useCallback((dir: 'left' | 'right') => {
@@ -67,16 +85,49 @@ export default function TemplateSelectPage() {
     window.location.hash = '';
   };
 
+  // AI generate handler
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim() || aiLoading) return;
+    setAiLoading(true);
+    setAiError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/ai/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt }),
+      });
+      const data = await res.json() as { success: boolean; design?: AiDesign; message?: string };
+      if (data.success && data.design) {
+        setAiDesign(data.design);
+      } else {
+        setAiError(data.message ?? '생성에 실패했습니다.');
+      }
+    } catch {
+      setAiError('서버 연결에 실패했습니다.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAiApply = () => {
+    if (!aiDesign) return;
+    saveAiDesign(aiDesign);
+    saveSelectedTemplate('ai-generate');
+    sessionStorage.removeItem('template_select_return');
+    window.location.hash = returnHash;
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isAiCard && (e.target as HTMLElement).tagName === 'TEXTAREA') return;
       if (e.key === 'ArrowRight') navigate('right');
       if (e.key === 'ArrowLeft') navigate('left');
       if (e.key === 'Escape') handleSkip();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate]);
+  }, [navigate, isAiCard]);
 
   const exitAnim = animDir === 'right'
     ? 'translateX(-60px) scale(0.97)'
@@ -100,6 +151,7 @@ export default function TemplateSelectPage() {
           from { opacity: 0; transform: translateX(-60px) scale(0.97); }
           to   { opacity: 1; transform: translateX(0) scale(1); }
         }
+        @keyframes _aiSpin { to { transform: rotate(360deg); } }
         .preview-enter-right { animation: slideInRight 0.32s cubic-bezier(0.16,1,0.3,1) forwards; }
         .preview-enter-left  { animation: slideInLeft  0.32s cubic-bezier(0.16,1,0.3,1) forwards; }
         .tpl-arrow {
@@ -146,11 +198,6 @@ export default function TemplateSelectPage() {
       {/* ── Preview area ── */}
       <div
         key={current.id}
-        className={
-          !isAnimating ? '' :
-          animDir === 'right' ? '' :
-          animDir === 'left' ? '' : ''
-        }
         style={{
           position: 'absolute', inset: 0,
           opacity: isAnimating ? 0 : 1,
@@ -158,15 +205,60 @@ export default function TemplateSelectPage() {
           transition: isAnimating ? 'opacity 0.28s ease, transform 0.28s cubic-bezier(0.16,1,0.3,1)' : 'none',
         }}
       >
-        <Preview />
+        {/* AI card with generated design: show live preview */}
+        {isAiCard && aiDesign ? (
+          <div style={{
+            width: '100%', height: '100%',
+            background: aiDesign.backgroundColor,
+            color: aiDesign.textColor,
+            fontFamily: aiDesign.fontStyle === 'monospace' ? 'monospace'
+              : aiDesign.fontStyle === 'serif' ? 'Georgia, serif'
+              : '-apple-system, BlinkMacSystemFont, sans-serif',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '48px',
+          }}>
+            <div style={{ fontSize: 10, letterSpacing: 4, color: aiDesign.accentColor, marginBottom: 16 }}>
+              AI GENERATED · PORTFOLIO
+            </div>
+            <div style={{ fontSize: 56, fontWeight: 900, lineHeight: 1.05, color: aiDesign.primaryColor, marginBottom: 10 }}>
+              YOUR NAME
+            </div>
+            <div style={{ fontSize: 12, letterSpacing: 3, opacity: 0.5, marginBottom: 28 }}>
+              DEVELOPER
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 28 }}>
+              {['React', 'TypeScript', 'Node.js'].map(s => (
+                <span key={s} style={{
+                  border: `1px solid ${aiDesign.accentColor}`,
+                  padding: '5px 14px', fontSize: 12,
+                  color: aiDesign.accentColor,
+                }}>{s}</span>
+              ))}
+            </div>
+            <div style={{
+              padding: '20px 24px', maxWidth: 400, width: '100%',
+              border: `1px solid ${aiDesign.primaryColor}33`,
+              borderTop: `3px solid ${aiDesign.accentColor}`,
+              background: `${aiDesign.primaryColor}08`,
+            }}>
+              <div style={{ fontSize: 11, color: aiDesign.accentColor, opacity: 0.5, marginBottom: 6 }}>01</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: aiDesign.primaryColor, marginBottom: 6 }}>Sample Project</div>
+              <div style={{ fontSize: 13, opacity: 0.6 }}>프로젝트 설명이 여기에 표시됩니다.</div>
+            </div>
+          </div>
+        ) : (
+          <Preview />
+        )}
       </div>
 
       {/* ── Bottom gradient overlay ── */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        height: '52%',
+        height: isAiCard ? '62%' : '52%',
         background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
         pointerEvents: 'none',
+        transition: 'height 0.3s ease',
       }} />
 
       {/* ── Top bar ── */}
@@ -176,14 +268,11 @@ export default function TemplateSelectPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)',
       }}>
-        {/* Logo */}
         <div style={{
           fontFamily: 'var(--font-heading)',
           fontWeight: 800, fontSize: 17,
           color: '#fff', letterSpacing: -0.5,
         }}>buildme</div>
-
-        {/* Counter */}
         <div style={{
           fontFamily: 'var(--font-mono)',
           fontSize: 11, letterSpacing: 2,
@@ -197,7 +286,7 @@ export default function TemplateSelectPage() {
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '0 48px 40px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isAiCard ? 20 : 28,
       }}>
         {/* Template info */}
         <div style={{ textAlign: 'center' }}>
@@ -239,6 +328,101 @@ export default function TemplateSelectPage() {
           </div>
         </div>
 
+        {/* AI Prompt Input (only for AI card) */}
+        {isAiCard && (
+          <div style={{ width: '100%', maxWidth: 480 }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {EXAMPLE_PROMPTS.map((ex) => (
+                <button
+                  key={ex}
+                  onClick={() => setAiPrompt(ex)}
+                  style={{
+                    padding: '5px 12px',
+                    background: aiPrompt === ex ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)',
+                    color: aiPrompt === ex ? '#fff' : 'rgba(255,255,255,0.4)',
+                    border: `1px solid ${aiPrompt === ex ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: 0, fontSize: 11,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >{ex}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="원하는 디자인 분위기를 설명해주세요..."
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAiGenerate();
+                  }
+                }}
+                style={{
+                  flex: 1, padding: '12px 16px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 0, color: '#fff',
+                  fontSize: 14, resize: 'none',
+                  outline: 'none', fontFamily: 'inherit',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.4)')}
+                onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.15)')}
+              />
+              <button
+                onClick={handleAiGenerate}
+                disabled={!aiPrompt.trim() || aiLoading}
+                style={{
+                  padding: '12px 20px',
+                  background: '#fff', color: '#000',
+                  border: 'none', borderRadius: 0,
+                  fontSize: 13, fontWeight: 700,
+                  cursor: !aiPrompt.trim() || aiLoading ? 'not-allowed' : 'pointer',
+                  opacity: !aiPrompt.trim() ? 0.4 : 1,
+                  transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {aiLoading ? (
+                  <>
+                    <div style={{
+                      width: 14, height: 14,
+                      border: '2px solid rgba(0,0,0,0.2)',
+                      borderTopColor: '#000', borderRadius: '50%',
+                      animation: '_aiSpin 0.8s linear infinite',
+                    }} />
+                    생성 중
+                  </>
+                ) : '생성하기'}
+              </button>
+            </div>
+            {aiError && (
+              <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8, textAlign: 'center' }}>{aiError}</p>
+            )}
+            {aiDesign && (
+              <div style={{
+                marginTop: 10, display: 'flex', alignItems: 'center', gap: 10,
+                justifyContent: 'center',
+              }}>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[aiDesign.primaryColor, aiDesign.accentColor, aiDesign.backgroundColor, aiDesign.textColor].map((c, i) => (
+                    <div key={i} style={{
+                      width: 16, height: 16,
+                      background: c, border: '1px solid rgba(255,255,255,0.2)',
+                    }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+                  {aiDesign.mood}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Navigation row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <button className="tpl-arrow" onClick={() => navigate('left')}>
@@ -256,7 +440,6 @@ export default function TemplateSelectPage() {
                 onClick={() => {
                   if (i === index || isAnimating) return;
                   navigate(i > index ? 'right' : 'left');
-                  // jump directly after animation
                   setTimeout(() => setIndex(i), 320);
                 }}
               />
@@ -278,9 +461,20 @@ export default function TemplateSelectPage() {
             </svg>
             이전
           </button>
-          <button className="tpl-cta" onClick={handleConfirm}>
-            {isPro && !isAdmin ? '🔒 Pro 전용' : '이 템플릿 적용하기 →'}
-          </button>
+          {isAiCard ? (
+            <button
+              className="tpl-cta"
+              onClick={aiDesign ? handleAiApply : handleAiGenerate}
+              disabled={!aiDesign && !aiPrompt.trim()}
+              style={!aiDesign && !aiPrompt.trim() ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+            >
+              {aiDesign ? '이 디자인 적용하기 →' : '디자인을 생성해주세요'}
+            </button>
+          ) : (
+            <button className="tpl-cta" onClick={handleConfirm}>
+              {isPro && !isAdmin ? 'Pro 전용' : '이 템플릿 적용하기 →'}
+            </button>
+          )}
         </div>
       </div>
 

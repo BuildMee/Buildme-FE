@@ -157,6 +157,75 @@ export function PreviewNeon() {
   );
 }
 
+export function PreviewAiGenerate() {
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 30%, #2d1b69 60%, #1a1a3e 100%)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 24, padding: '48px 44px',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Animated gradient orbs */}
+      <div style={{
+        position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%)',
+        top: '10%', left: '15%', filter: 'blur(40px)',
+      }} />
+      <div style={{
+        position: 'absolute', width: 160, height: 160, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)',
+        bottom: '20%', right: '10%', filter: 'blur(40px)',
+      }} />
+
+      {/* AI Icon */}
+      <div style={{
+        width: 64, height: 64, borderRadius: 16,
+        background: 'rgba(255,255,255,0.08)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      </div>
+
+      <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        <div style={{
+          fontSize: 28, fontWeight: 800, color: '#fff',
+          lineHeight: 1.2, marginBottom: 8,
+          fontFamily: 'var(--font-heading)',
+        }}>
+          AI로 만들기
+        </div>
+        <div style={{
+          fontSize: 13, color: 'rgba(255,255,255,0.45)',
+          lineHeight: 1.6,
+        }}>
+          원하는 분위기를 설명하면<br />
+          AI가 나만의 디자인을 생성합니다
+        </div>
+      </div>
+
+      {/* Sample prompt chips */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+        {['다크 미니멀', '터미널 감성', '밝고 깔끔한'].map(t => (
+          <span key={t} style={{
+            padding: '5px 12px', borderRadius: 20,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            fontSize: 11, color: 'rgba(255,255,255,0.4)',
+          }}>{t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export const PREVIEWS: Record<string, React.ComponentType> = {
   'minimal-dark': PreviewMinimalDark,
   'clean-white':  PreviewCleanWhite,
@@ -168,4 +237,5 @@ export const PREVIEWS: Record<string, React.ComponentType> = {
   'hacker':       PreviewHacker,
   'editorial':    PreviewEditorial,
   'neon':         PreviewNeon,
+  'ai-generate':  PreviewAiGenerate,
 };

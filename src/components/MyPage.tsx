@@ -8,6 +8,7 @@ import {
   updatePortfolioOnServer,
   fetchMyResumes,
   deleteResumeFromServer,
+  API_BASE,
   type SavedPortfolio,
   type SavedResume,
 } from '../utils/portfolioApi';
@@ -27,8 +28,6 @@ export default function MyPage() {
   const [editData, setEditData] = useState<PortfolioData | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
-
   useEffect(() => {
     const token = sessionStorage.getItem('access_token');
     const provider = sessionStorage.getItem('auth_provider');
@@ -44,7 +43,7 @@ export default function MyPage() {
         })
         .catch(() => {});
     } else {
-      fetch(`${apiBase}/api/auth/me`, {
+      fetch(`${API_BASE}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())

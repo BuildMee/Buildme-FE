@@ -3,7 +3,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../styles/ResumePage.module.css';
 import { savePortfolioData, getSelectedTemplate } from '../utils/templates';
-import { savePortfolioToServer } from '../utils/portfolioApi';
+import { savePortfolioToServer, API_BASE } from '../utils/portfolioApi';
 import { handleGitHubLogin } from '../utils/auth';
 import { GitHubIcon } from './Icons';
 import UpgradeModal from './UpgradeModal';
@@ -39,8 +39,6 @@ interface GeneratedPortfolio {
   projects: GeneratedProject[];
   summary: string;
 }
-
-const STEP_KEYS: Step[] = ['select', 'role', 'detail', 'extra', 'generating', 'done'];
 
 const PHASES = ['프로젝트 선택', '상세 정보 입력', 'AI 분석', '포트폴리오'];
 const getPhaseIndex = (s: Step): number => {
@@ -82,9 +80,7 @@ export default function GithubPortfolioPage() {
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [hoveredRepo, setHoveredRepo] = useState<number | null>(null);
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
   const token = sessionStorage.getItem('access_token');
   const authProvider = sessionStorage.getItem('auth_provider');
   const isGoogleOnly = authProvider === 'google';
@@ -92,13 +88,13 @@ export default function GithubPortfolioPage() {
   useEffect(() => {
     if (!token) { window.location.hash = ''; return; }
 
-    fetch(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((d: { success: boolean; user?: { name?: string; login?: string } }) => {
         if (d.success && d.user) setUserName(d.user.name || d.user.login || '');
       }).catch(() => {});
 
-    fetch(`${apiBase}/api/github/repos`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/api/github/repos`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((d: { success: boolean; repos?: Repo[]; orgs?: string[] }) => {
         if (d.success && d.repos) setRepos(d.repos);
@@ -135,7 +131,7 @@ export default function GithubPortfolioPage() {
       const details = await Promise.all(
         Array.from(selectedRepos).map(async (fullName) => {
           const [owner, repo] = fullName.split('/');
-          const res = await fetch(`${apiBase}/api/github/repo-detail/${owner}/${repo}`, {
+          const res = await fetch(`${API_BASE}/api/github/repo-detail/${owner}/${repo}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json() as { success: boolean; detail?: object };
@@ -144,7 +140,7 @@ export default function GithubPortfolioPage() {
         })
       );
 
-      const res = await fetch(`${apiBase}/api/ai/generate-portfolio`, {
+      const res = await fetch(`${API_BASE}/api/ai/generate-portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userName, major: resolvedRole, repos: details.filter(Boolean), extraInfo }),
@@ -182,7 +178,6 @@ export default function GithubPortfolioPage() {
   };
 
   const phaseIndex = getPhaseIndex(step);
-  const currentStepIdx = STEP_KEYS.indexOf(step);
 
   const HEADER_TEXT: Record<Step, { title: string; sub: string }> = {
     select:     { title: '나를 대표하는 프로젝트 선택', sub: '선택한 레포지토리가 AI 포트폴리오의 핵심 재료가 됩니다. 나를 가장 잘 표현하는 프로젝트를 골라보세요.' },
@@ -474,6 +469,25 @@ export default function GithubPortfolioPage() {
                               background: selected ? langColor : 'transparent',
                               transition: 'background 0.18s',
                             }} />
+
+                            {/* Repository OG image */}
+                            <div style={{
+                              width: '100%', height: 120, overflow: 'hidden',
+                              borderRadius: '4px 4px 0 0',
+                              background: '#F5F5F5',
+                              marginBottom: 12,
+                            }}>
+                              <img
+                                src={`https://opengraph.githubassets.com/1/${r.fullName}`}
+                                alt={r.name}
+                                style={{
+                                  width: '100%', height: '100%',
+                                  objectFit: 'cover',
+                                  display: 'block',
+                                }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
 
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                               <div style={{ flex: 1, minWidth: 0 }}>
@@ -899,9 +913,6 @@ export default function GithubPortfolioPage() {
         )}
 
       </div>
-
-      {/* Suppress unused variable warning */}
-      {currentStepIdx === -1 && null}
 
       <Footer />
       {upgradeOpen && <UpgradeModal reason="daily" onClose={() => setUpgradeOpen(false)} />}

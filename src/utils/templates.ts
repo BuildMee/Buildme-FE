@@ -19,6 +19,7 @@ export const TEMPLATES: TemplateInfo[] = [
   { id: 'hacker', name: 'Hacker Mode', category: 'tech', description: '해커 감성의 다크 터미널 스타일' },
   { id: 'editorial', name: 'Editorial', category: 'creative', description: '에디토리얼 매거진 레이아웃' },
   { id: 'neon', name: 'Neon Dark', category: 'dark', description: '네온 포인트의 다크 테마' },
+  { id: 'ai-generate', name: 'AI Custom', category: 'ai', description: 'AI가 나만의 디자인을 생성합니다' },
 ];
 
 export function saveSelectedTemplate(id: string) {
